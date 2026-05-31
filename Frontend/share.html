@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StudSpace — Shared semester</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+  :root { --accent: #6366f1; }
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; background: #fff; color: #0a0a0a; }
+  html.dark body { background: #0a0a0a; color: #fafafa; }
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .ink { background: linear-gradient(180deg, #0a0a0a 0%, #404040 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  html.dark .ink { background: linear-gradient(180deg, #fafafa 0%, #a3a3a3 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .rise { animation: rise 480ms cubic-bezier(.22,1,.36,1) both; }
+  .card { border-radius: 10px; border: 1px solid rgba(0,0,0,0.09); background: white; }
+  html.dark .card { border-color: rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); }
+  .badge { display: inline-flex; align-items: center; border-radius: 5px; padding: 2px 6px; font-size: 10.5px; font-weight: 500; }
+  .badge-pyq      { background: #f3f0ff; color: #6d28d9; }
+  .badge-playlist  { background: #fff1f2; color: #be185d; }
+  .badge-notes    { background: #fffbeb; color: #92400e; }
+  .badge-link     { background: #f0f9ff; color: #0369a1; }
+  .badge-other    { background: #f5f5f5; color: #525252; }
+  html.dark .badge-pyq      { background: rgba(139,92,246,0.1); color: #c4b5fd; }
+  html.dark .badge-playlist  { background: rgba(244,63,94,0.1);  color: #fda4af; }
+  html.dark .badge-notes    { background: rgba(245,158,11,0.1);  color: #fcd34d; }
+  html.dark .badge-link     { background: rgba(14,165,233,0.1);  color: #7dd3fc; }
+  html.dark .badge-other    { background: rgba(255,255,255,0.05); color: #a3a3a3; }
+  .skeleton { border-radius: 6px; background: #e5e5e5; animation: pulse 1.5s ease-in-out infinite; }
+  html.dark .skeleton { background: rgba(255,255,255,0.07); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .share-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 500;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: white; color: #525252;
+    cursor: pointer; transition: all 180ms ease;
+  }
+  html.dark .share-chip { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); color: #a3a3a3; }
+  .share-chip:hover { background: #fafafa; color: #171717; }
+  html.dark .share-chip:hover { background: rgba(255,255,255,0.05); color: #fafafa; }
+  .share-chip.active { background: #171717; color: white; border-color: #171717; }
+  html.dark .share-chip.active { background: white; color: #0a0a0a; border-color: white; }
+
+  /* Core layout border & shadow improvements */
+  .border, .border-t, .border-b, .border-r, .border-l {
+    border-style: solid !important;
+  }
+  .border {
+    border-width: 1px !important;
+    border-color: #e4e4e7 !important;
+  }
+  .border-t {
+    border-top-width: 1px !important;
+    border-top-color: #e4e4e7 !important;
+  }
+  .border-b {
+    border-bottom-width: 1px !important;
+    border-bottom-color: #e4e4e7 !important;
+  }
+  .border-r {
+    border-right-width: 1px !important;
+    border-right-color: #e4e4e7 !important;
+  }
+  .border-l {
+    border-left-width: 1px !important;
+    border-left-color: #e4e4e7 !important;
+  }
+
+  /* Dark mode overrides for borders */
+  html.dark .border {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-t {
+    border-top-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-b {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-r {
+    border-right-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-l {
+    border-left-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Shadows fallback */
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  }
+  .shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08) !important;
+  }
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08) !important;
+  }
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  html.dark .shadow-sm,
+  html.dark .shadow,
+  html.dark .shadow-md,
+  html.dark .shadow-lg {
+    box-shadow: none !important;
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<script src="js/api.js"></script>
+<script>
+  (function () {
+    const stored = localStorage.getItem('ss-theme');
+    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+    const accent = localStorage.getItem('ss-accent');
+    if (accent) document.documentElement.style.setProperty('--accent', accent);
+  })();
+
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('ss-theme', isDark ? 'dark' : '');
+    const icon = document.getElementById('theme-icon');
+    icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+    lucide.createIcons();
+  }
+
+  // Set correct icon after lucide initialises
+  document.addEventListener('DOMContentLoaded', function () {
+    const icon = document.getElementById('theme-icon');
+    if (document.documentElement.classList.contains('dark')) {
+      icon.setAttribute('data-lucide', 'sun');
+      lucide.createIcons();
+    }
+  });
+</script>
+
+<!-- Banner -->
+<div class="border-b border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50/60 dark:bg-white/[0.02]">
+  <div class="mx-auto max-w-[920px] px-6 py-2 flex items-center justify-between gap-3 text-[11.5px] text-neutral-500 dark:text-neutral-400">
+    <span class="inline-flex items-center gap-1.5">
+      <i data-lucide="eye" class="w-3 h-3"></i>
+      Shared semester · read-only
+    </span>
+    <div class="flex items-center gap-3">
+      <button id="theme-toggle" onclick="toggleTheme()" class="grid h-6 w-6 place-items-center rounded-md hover:bg-neutral-200/70 dark:hover:bg-white/[0.06] transition-colors" aria-label="Toggle dark mode">
+        <i id="theme-icon" data-lucide="moon" class="w-3.5 h-3.5"></i>
+      </button>
+      <a href="index.html" class="inline-flex items-center gap-1 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+        <span class="grid h-4 w-4 place-items-center rounded bg-[var(--accent)] text-white"><i data-lucide="graduation-cap" class="w-2.5 h-2.5"></i></span>
+        What is StudSpace?
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Loading / error states -->
+<div id="state-loading" class="mx-auto max-w-[920px] px-6 py-16 text-center" style="display:none">
+  <div class="skeleton mx-auto h-20 w-20 rounded-2xl mb-4"></div>
+  <div class="skeleton mx-auto h-7 w-56 mb-2"></div>
+  <div class="skeleton mx-auto h-4 w-80"></div>
+</div>
+<div id="state-error" class="mx-auto max-w-[920px] px-6 py-20 text-center" style="display:none">
+  <i data-lucide="link-2-off" class="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-700 mb-4"></i>
+  <h2 class="text-[18px] font-semibold tracking-tight text-neutral-800 dark:text-neutral-100">Link not found or expired</h2>
+  <p class="mt-2 text-[13px] text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto">
+    This semester might have been unshared by its owner. Ask them for a new link.
+  </p>
+  <a href="signin.html" class="mt-6 inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[12.5px] font-medium hover:opacity-90 transition-opacity">
+    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i> Get your own workspace
+  </a>
+</div>
+
+<!-- Content (rendered by JS) -->
+<main id="content" class="mx-auto max-w-[920px] px-6 py-10 sm:py-14" style="display:none"></main>
+
+<!-- CTA footer -->
+<div id="cta-footer" class="border-t border-neutral-200/80 dark:border-white/[0.06] bg-white dark:bg-neutral-950 mt-16" style="display:none">
+  <div class="mx-auto max-w-[920px] px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <a href="index.html" class="flex items-center gap-2 text-[12px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+      <span class="grid h-5 w-5 place-items-center rounded bg-[var(--accent)] text-white shadow-sm"><i data-lucide="graduation-cap" class="w-3 h-3"></i></span>
+      built with <span class="font-semibold text-neutral-800 dark:text-neutral-200">StudSpace</span>
+    </a>
+    <a href="signin.html#signup" class="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[12.5px] font-medium hover:opacity-90 transition-opacity shadow-sm">
+      Make your own — it's free <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+    </a>
+  </div>
+</div>
+
+<script>
+const RESOURCE_ICON = { PYQ: "file-text", PLAYLIST: "play-square", NOTES: "notebook-pen", LINK: "link", OTHER: "paperclip" };
+const TYPE_BADGE_CLS = {
+  PYQ:      "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
+  PLAYLIST: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+  NOTES:    "bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300",
+  LINK:     "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+  OTHER:    "bg-neutral-100 text-neutral-600 dark:bg-white/[0.05] dark:text-neutral-400",
+};
+const TYPE_LABEL = { PYQ: "PYQ", PLAYLIST: "Playlist", NOTES: "Notes", LINK: "Link", OTHER: "Other" };
+
+const PLATFORM_ICONS = {
+  leetcode:   `<span style="color:#FFA116"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M9.5 1.5 4 7l5.5 5.5L11 11l-4-4 4-4-1.5-1.5Z" fill="currentColor"/><rect x="6.5" y="7" width="6.5" height="1.6" rx="0.8" fill="currentColor"/></svg></span>`,
+  codeforces: `<span style="color:#1F8FE0"><svg width="13" height="13" viewBox="0 0 16 16"><rect x="1.5" y="7" width="3" height="7" rx="0.8" fill="currentColor"/><rect x="6.5" y="3.5" width="3" height="10.5" rx="0.8" fill="currentColor" opacity="0.8"/><rect x="11.5" y="5.5" width="3" height="8.5" rx="0.8" fill="currentColor" opacity="0.6"/></svg></span>`,
+  hackerrank: `<span style="color:#1BA94C"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 14 5v6L8 14.5 2 11V5L8 1.5Z" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5v6M9.5 5v6M6.5 8h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>`,
+  github:     `<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.13 1 1 4.13 1 8c0 3.1 2 5.72 4.78 6.65.35.07.48-.15.48-.34 0-.17-.01-.62-.01-1.22-1.94.42-2.35-.94-2.35-.94-.32-.81-.78-1.02-.78-1.02-.64-.43.05-.42.05-.42.7.05 1.07.72 1.07.72.63 1.08 1.65.77 2.05.59.06-.46.25-.77.45-.95-1.56-.18-3.2-.78-3.2-3.47 0-.77.28-1.39.72-1.88-.07-.18-.31-.89.07-1.85 0 0 .59-.19 1.94.72.56-.16 1.17-.23 1.77-.23.6 0 1.21.08 1.77.23 1.35-.91 1.94-.72 1.94-.72.39.96.14 1.67.07 1.85.45.49.72 1.11.72 1.88 0 2.69-1.64 3.29-3.2 3.46.25.22.48.65.48 1.32 0 .95-.01 1.71-.01 1.95 0 .19.13.41.49.34A7 7 0 0 0 15 8c0-3.87-3.13-7-7-7Z"/></svg>`,
+  linkedin:   `<span style="color:#0A66C2"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm2.2 4.4a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4ZM3 7v6h2.4V7H3Zm4 0v6h2.4V9.7c0-.7.4-1.2 1.1-1.2.6 0 1 .4 1 1.2V13H13V9.3c0-1.8-1-2.5-2.2-2.5-.9 0-1.4.5-1.7 1V7H7Z"/></svg></span>`,
+  resume:     `<span style="color:#DC2626"><i data-lucide="file-text" style="width:13px;height:13px;display:inline-flex"></i></span>`,
+  portfolio:  `<span style="color:#7C3AED"><i data-lucide="globe" style="width:13px;height:13px;display:inline-flex"></i></span>`,
+};
+function platformIcon(p) { return PLATFORM_ICONS[(p||"").toLowerCase()] || `<i data-lucide="link" style="width:13px;height:13px;display:inline-flex"></i>`; }
+
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html) e.innerHTML = html;
+  return e;
+}
+function icon(name, size = 14) {
+  return `<i data-lucide="${name}" style="width:${size}px;height:${size}px;display:inline-flex;flex-shrink:0;vertical-align:middle"></i>`;
+}
+function initials(u) {
+  if (u.fullName) return u.fullName.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
+  return (u.username || "?").slice(0,2).toUpperCase();
+}
+function gradFor(str) {
+  const g = ["from-indigo-500 to-violet-600","from-rose-400 to-pink-500","from-emerald-400 to-teal-500","from-amber-400 to-orange-500","from-sky-400 to-blue-500"];
+  let h = 0;
+  for (let i = 0; i < (str||"").length; i++) h = (h*31 + str.charCodeAt(i)) >>> 0;
+  return g[h % g.length];
+}
+
+let _allCourses = [];
+let _activeType = "all";
+let _search = "";
+
+function renderCourses() {
+  const container = document.getElementById("course-section");
+  const emptyEl = document.getElementById("empty-state");
+  if (!container) return;
+  container.innerHTML = "";
+  let totalShown = 0;
+
+  _allCourses.forEach((c) => {
+    const resources = c.resources || [];
+    const filtered = resources.filter(r => {
+      const key = (r.type || "OTHER").toUpperCase();
+      return (_activeType === "all" || key === _activeType) &&
+             (!_search || r.title.toLowerCase().includes(_search.toLowerCase()));
+    });
+    if (filtered.length === 0 && (_activeType !== "all" || _search)) return;
+    totalShown += filtered.length;
+
+    const resRows = filtered.length === 0
+      ? `<div class="px-4 py-6 text-center text-[12px] text-neutral-400">No resources shared for this course.</div>`
+      : `<div class="px-2 py-2 flex flex-col gap-0.5">
+          ${filtered.map(r => {
+            const key = (r.type || "OTHER").toUpperCase();
+            const iconName = RESOURCE_ICON[key] || "paperclip";
+            const badgeCls = TYPE_BADGE_CLS[key] || TYPE_BADGE_CLS.OTHER;
+            const typeLabel = TYPE_LABEL[key] || r.type;
+            const href = r.url ? (r.url.startsWith("http") ? r.url : "https://" + r.url) : "#";
+            const when = r.createdAt ? new Date(r.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "";
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="group grid items-center gap-3 rounded-md px-2.5 py-2 hover:bg-neutral-50 dark:hover:bg-white/[0.03] transition-colors" style="grid-template-columns:24px 72px 1fr auto auto">
+              ${icon(iconName, 14)}
+              <span class="${badgeCls} rounded-md px-1.5 py-0.5 text-[10.5px] font-medium text-center">${typeLabel}</span>
+              <div style="min-width:0">
+                <div style="font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" class="text-neutral-800 dark:text-neutral-100">${r.title}</div>
+                ${r.url ? `<div style="font-size:11px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" class="text-neutral-500 dark:text-neutral-500">${r.url}</div>` : ""}
+              </div>
+              <span style="font-size:11px;white-space:nowrap" class="text-neutral-400">${when}</span>
+              <span class="opacity-0 group-hover:opacity-100 transition-opacity">${icon("external-link",12)}</span>
+            </a>`;
+          }).join("")}
+        </div>`;
+
+    const card = el("div", "card overflow-hidden");
+    card.innerHTML = `
+      <div class="flex items-center gap-4 px-4 py-3.5 border-b border-neutral-200/60 dark:border-white/[0.05]">
+        ${c.code ? `<span class="font-mono text-[11px] font-medium tracking-wider text-neutral-400 dark:text-neutral-500 shrink-0">${c.code}</span>` : ""}
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <span class="truncate text-[13.5px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">${c.name}</span>
+
+          </div>
+          ${c.instructor ? `<div class="text-[11.5px] text-neutral-500 dark:text-neutral-400">${c.instructor}${c.credits ? ` · ${c.credits} credits` : ""}</div>` : ""}
+        </div>
+        <span class="text-[11px] text-neutral-500 dark:text-neutral-400 tabular-nums shrink-0">${resources.length} resource${resources.length !== 1 ? "s" : ""}</span>
+      </div>
+      ${resRows}
+    `;
+    container.appendChild(card);
+  });
+
+  if (emptyEl) emptyEl.style.display = (totalShown === 0 && (_activeType !== "all" || _search)) ? "block" : "none";
+  window.lucide?.createIcons();
+}
+
+function renderContent(data) {
+  const user = data.user || {};
+  const semester = data.semester || {};
+  const courses = semester.courses || [];
+  _allCourses = courses;
+
+  document.title = `${user.fullName || user.username || "Someone"} · ${semester.label || "Semester"} · StudSpace`;
+
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+
+  const grad = gradFor(user.username);
+  const ini = initials(user);
+  const handles = user.handles || [];
+  const totalRes = courses.reduce((s, c) => s + (c.resources || []).length, 0);
+  const totalCred = courses.reduce((s, c) => s + (c.credits || 0), 0);
+
+  // Identity header
+  const header = el("header", "rise");
+  header.innerHTML = `
+    <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-5">
+      <div class="flex items-end gap-4">
+        <div class="grid h-20 w-20 sm:h-24 sm:w-24 place-items-center rounded-full overflow-hidden ${user.profilePhoto ? "" : `bg-gradient-to-br ${grad}`} text-[28px] sm:text-[32px] font-semibold text-white shadow-lg">
+          ${user.profilePhoto ? `<img src="${user.profilePhoto}" alt="" class="h-full w-full object-cover" />` : ini}
+        </div>
+        <div class="pb-1">
+          <h1 class="text-[24px] sm:text-[28px] font-semibold tracking-tight ink">${user.fullName || user.username || ""}</h1>
+          <p class="mt-1 text-[12.5px] text-neutral-500 dark:text-neutral-400 flex flex-wrap items-center gap-2">
+            ${user.username ? `<span class="font-mono">@${user.username}</span>` : ""}
+            ${user.branch ? `<span class="text-neutral-300 dark:text-neutral-700">·</span><span class="inline-flex items-center gap-1">${icon("graduation-cap",11)} ${user.branch}</span>` : ""}
+            ${user.college ? `<span class="text-neutral-300 dark:text-neutral-700">·</span><span class="inline-flex items-center gap-1">${icon("map-pin",11)} ${user.college}</span>` : ""}
+          </p>
+        </div>
+      </div>
+      <button id="copy-link" class="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-[12.5px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-white/[0.06] transition-colors">
+        ${icon("link-2",12)} Copy link
+      </button>
+    </div>
+    ${user.bio ? `<p class="mt-3 text-[13.5px] leading-relaxed text-neutral-600 dark:text-neutral-300 max-w-[600px]">${user.bio}</p>` : ""}
+    ${handles.length > 0 ? `
+    <div class="mt-4 flex flex-wrap gap-1.5">
+      ${handles.map(h => {
+        const href = h.url.startsWith("http") ? h.url : "https://" + h.url;
+        const slug = h.url.replace(/^https?:\/\/[^/]+\//, "").replace(/\/$/, "");
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-2.5 py-1.5 text-[12px] text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-white/[0.06] transition-colors">
+          ${platformIcon(h.platform)} ${h.platform}<span class="text-neutral-400">/${slug}</span>
+        </a>`;
+      }).join("")}
+    </div>` : ""}
+  `;
+  content.appendChild(header);
+
+  document.getElementById("copy-link").addEventListener("click", () => {
+    navigator.clipboard?.writeText(window.location.href).then(() => {
+      const btn = document.getElementById("copy-link");
+      btn.innerHTML = icon("check",12) + " Copied!";
+      setTimeout(() => { btn.innerHTML = icon("link-2",12) + " Copy link"; window.lucide?.createIcons(); }, 2000);
+      window.lucide?.createIcons();
+    });
+  });
+
+  // Semester section with search + filter chips
+  const semSection = el("section", "mt-10 rise");
+  semSection.style.animationDelay = "80ms";
+  const presentTypes = [...new Set(courses.flatMap(c => (c.resources||[]).map(r => (r.type||"OTHER").toUpperCase())))];
+  semSection.innerHTML = `
+    <div class="flex items-end justify-between flex-wrap gap-3">
+      <div>
+        <div class="flex items-center gap-2 text-[11.5px] font-medium uppercase tracking-wider text-[var(--accent)]">
+          ${icon("bookmark",12)} Shared semester
+        </div>
+        <h2 class="mt-1.5 text-[20px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">${semester.label || "Semester"}</h2>
+        <p class="mt-0.5 text-[12.5px] text-neutral-500 dark:text-neutral-400">${courses.length} course${courses.length !== 1 ? "s" : ""} · ${totalRes} resource${totalRes !== 1 ? "s" : ""}</p>
+      </div>
+      <div style="position:relative">
+        <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:#a3a3a3;pointer-events:none"></i>
+        <input id="share-search" placeholder="Search resources…" class="h-9 w-56 rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-neutral-50 dark:bg-white/[0.02] pr-2.5 text-[12.5px] text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400 outline-none focus:border-[var(--accent)] focus:bg-white dark:focus:bg-white/[0.04] transition-colors" style="padding-left:30px" />
+      </div>
+    </div>
+    <div id="filter-chips" class="mt-4 flex flex-wrap gap-1.5">
+      <button class="share-chip active" data-type="all">All <span class="ml-1 tabular-nums" style="color:#a3a3a3">${totalRes}</span></button>
+      ${presentTypes.map(t => `<button class="share-chip" data-type="${t}">${TYPE_LABEL[t] || t}</button>`).join("")}
+    </div>
+  `;
+  content.appendChild(semSection);
+
+  semSection.querySelector("#filter-chips").addEventListener("click", (e) => {
+    const chip = e.target.closest(".share-chip");
+    if (!chip) return;
+    _activeType = chip.dataset.type;
+    semSection.querySelectorAll(".share-chip").forEach(c => c.classList.toggle("active", c === chip));
+    renderCourses();
+  });
+  document.getElementById("share-search").addEventListener("input", (e) => {
+    _search = e.target.value;
+    renderCourses();
+  });
+
+  // Stats row
+  const statsRow = el("div", "mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 rise");
+  statsRow.style.animationDelay = "120ms";
+  statsRow.innerHTML = [
+    { label: "Courses", value: courses.length },
+    { label: "Resources", value: totalRes },
+    { label: "Credits", value: totalCred || "—" },
+    { label: "Visibility", value: "Public" },
+  ].map(s => `
+    <div class="card px-3.5 py-3">
+      <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:500" class="text-neutral-500 dark:text-neutral-400">${s.label}</div>
+      <div style="margin-top:4px;font-size:20px;font-weight:600;letter-spacing:-.02em" class="text-neutral-900 dark:text-neutral-50">${s.value}</div>
+    </div>
+  `).join("");
+  content.appendChild(statsRow);
+
+  // Course list container
+  const courseSection = el("section", "mt-6 flex flex-col gap-3 rise");
+  courseSection.id = "course-section";
+  courseSection.style.animationDelay = "160ms";
+  content.appendChild(courseSection);
+
+  // Empty state
+  const emptyState = el("div", "mt-6 rounded-lg border border-dashed border-neutral-200 dark:border-white/[0.08] py-12 text-center");
+  emptyState.id = "empty-state";
+  emptyState.style.display = "none";
+  emptyState.innerHTML = `
+    <svg width="48" height="36" viewBox="0 0 64 48" fill="none" class="mx-auto" style="color:#d4d4d4"><circle cx="26" cy="22" r="14" stroke="currentColor" stroke-width="1.25"/><line x1="36.5" y1="32" x2="46" y2="42" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+    <p class="mt-3 text-[12.5px] text-neutral-500 dark:text-neutral-400">No resources match your filters.</p>
+  `;
+  content.appendChild(emptyState);
+
+  const note = el("p", "mt-8 text-center text-[11.5px] text-neutral-400 dark:text-neutral-600 rise");
+  note.style.animationDelay = "200ms";
+  note.textContent = "This page is shared publicly by the semester owner. Create your own workspace to track your courses.";
+  content.appendChild(note);
+
+  document.getElementById("content").style.display = "block";
+  document.getElementById("cta-footer").style.display = "block";
+
+  renderCourses();
+  window.lucide?.createIcons();
+}
+
+async function load() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  const loading = document.getElementById("state-loading");
+  const error = document.getElementById("state-error");
+
+  if (!token) {
+    loading.style.display = "none";
+    error.style.display = "block";
+    window.lucide?.createIcons();
+    return;
+  }
+
+  loading.style.display = "block";
+  window.lucide?.createIcons();
+
+  try {
+    const data = await API.share.get(token);
+    loading.style.display = "none";
+    renderContent(data);
+  } catch (e) {
+    loading.style.display = "none";
+    error.style.display = "block";
+    window.lucide?.createIcons();
+  }
+}
+
+window.lucide?.createIcons();
+load();
+</script>
+</body>
+</html>

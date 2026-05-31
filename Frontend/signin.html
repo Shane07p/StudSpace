@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StudSpace — Sign in</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+  :root { --accent: #6366f1; }
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; background: #fafafa; color: #0a0a0a; }
+  html.dark body { background: #0a0a0a; color: #fafafa; }
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .dots {
+    background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0);
+    background-size: 18px 18px;
+  }
+  html.dark .dots { background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0); }
+  .ink {
+    background: linear-gradient(180deg, #0a0a0a 0%, #404040 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  html.dark .ink { background: linear-gradient(180deg, #fafafa 0%, #a3a3a3 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .form-fade { animation: fade 240ms cubic-bezier(.22,1,.36,1) both; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field-label { font-size: 11.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #737373; }
+  html.dark .field-label { color: #a3a3a3; }
+  .input-wrap { position: relative; }
+  .input-wrap .icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: #a3a3a3; pointer-events: none; }
+  .field-input { height: 40px; width: 100%; border-radius: 6px; border: 1px solid rgba(0,0,0,0.12); background: white; padding: 0 10px 0 32px; font-size: 13px; color: #171717; outline: none; transition: border-color 150ms, box-shadow 150ms; }
+  .field-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
+  html.dark .field-input { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #e5e5e5; }
+  html.dark .field-input::placeholder { color: #525252; }
+  .submit-btn { height: 40px; width: 100%; border-radius: 6px; background: #171717; color: white; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 150ms, opacity 150ms; border: none; }
+  html.dark .submit-btn { background: white; color: #171717; }
+  .submit-btn:hover { opacity: 0.9; }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .error-box { display: none; border-radius: 6px; border: 1px solid rgba(239,68,68,0.25); background: rgba(254,242,242,1); padding: 10px 12px; font-size: 12.5px; color: #dc2626; }
+  html.dark .error-box { background: rgba(239,68,68,0.08); color: #f87171; border-color: rgba(239,68,68,0.2); }
+  .error-box.show { display: block; }
+
+  /* Core layout border & shadow improvements */
+  .border, .border-t, .border-b, .border-r, .border-l {
+    border-style: solid !important;
+  }
+  .border {
+    border-width: 1px !important;
+    border-color: #e4e4e7 !important;
+  }
+  .border-t {
+    border-top-width: 1px !important;
+    border-top-color: #e4e4e7 !important;
+  }
+  .border-b {
+    border-bottom-width: 1px !important;
+    border-bottom-color: #e4e4e7 !important;
+  }
+  .border-r {
+    border-right-width: 1px !important;
+    border-right-color: #e4e4e7 !important;
+  }
+  .border-l {
+    border-left-width: 1px !important;
+    border-left-color: #e4e4e7 !important;
+  }
+
+  /* Dark mode overrides for borders */
+  html.dark .border {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-t {
+    border-top-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-b {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-r {
+    border-right-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-l {
+    border-left-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Shadows fallback */
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  }
+  .shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08) !important;
+  }
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08) !important;
+  }
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  html.dark .shadow-sm,
+  html.dark .shadow,
+  html.dark .shadow-md,
+  html.dark .shadow-lg {
+    box-shadow: none !important;
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Load API before any form logic -->
+<script src="js/api.js"></script>
+<script>
+  // Redirect if already authenticated
+  (function () {
+    const stored = localStorage.getItem('ss-theme');
+    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+    const accent = localStorage.getItem('ss-accent');
+    if (accent) document.documentElement.style.setProperty('--accent', accent);
+    if (API.isAuthenticated()) window.location.href = 'dashboard.html';
+  })();
+</script>
+
+<div class="grid min-h-screen lg:grid-cols-[1fr_520px]">
+  <!-- LEFT — brand panel -->
+  <aside class="hidden lg:flex flex-col justify-between p-10 relative overflow-hidden border-r border-neutral-200/80 dark:border-white/[0.06] bg-white dark:bg-neutral-950">
+    <div class="absolute inset-0 dots opacity-60 pointer-events-none"></div>
+    <div class="absolute -top-32 -left-32 w-[480px] h-[480px] rounded-full pointer-events-none" style="background: radial-gradient(closest-side, color-mix(in oklch, var(--accent) 14%, transparent), transparent);"></div>
+
+    <a href="index.html" class="relative flex items-center gap-2">
+      <span class="grid h-8 w-8 place-items-center rounded-md bg-[var(--accent)] text-white shadow-sm">
+        <i data-lucide="graduation-cap" class="w-4 h-4" data-stroke-width="2.25"></i>
+      </span>
+      <span class="text-[15px] font-semibold tracking-tight">StudSpace</span>
+    </a>
+
+    <div class="relative max-w-md self-center -translate-y-6">
+      <div class="rounded-xl border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-900 shadow-2xl shadow-neutral-900/10 dark:shadow-black/40 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[12.5px] font-semibold tracking-tight">Good morning, you 👋</div>
+            <div class="text-[10.5px] text-neutral-500 dark:text-neutral-400">3 classes today · OS at 09:00</div>
+          </div>
+          <span class="rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">82%</span>
+        </div>
+        <div class="mt-3 grid grid-cols-2 gap-2">
+          <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-2.5">
+            <div class="font-mono text-[9.5px] text-neutral-400">CS3401</div>
+            <div class="mt-0.5 text-[11.5px] font-semibold tracking-tight">Operating Systems</div>
+            <div class="mt-2 h-[3px] rounded-full bg-neutral-100 dark:bg-white/[0.06]"><div class="h-full rounded-full bg-[var(--accent)]" style="width:64%"></div></div>
+          </div>
+          <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-2.5">
+            <div class="font-mono text-[9.5px] text-neutral-400">CS3402</div>
+            <div class="mt-0.5 text-[11.5px] font-semibold tracking-tight">Database Systems</div>
+            <div class="mt-2 h-[3px] rounded-full bg-neutral-100 dark:bg-white/[0.06]"><div class="h-full rounded-full bg-[var(--accent)]" style="width:58%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="absolute -top-4 -right-6 rotate-3 rounded-lg border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-900 shadow-lg p-2.5 max-w-[160px]">
+        <div class="flex items-center gap-1.5">
+          <span class="rounded bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 px-1 py-px text-[9px] font-semibold">PYQ</span>
+          <span class="text-[9.5px] text-neutral-500 tabular-nums">2h ago</span>
+        </div>
+        <div class="mt-1 text-[10.5px] font-medium leading-snug">OS Mid-sem 2023 — solved</div>
+      </div>
+      <div class="absolute -bottom-5 -left-6 -rotate-2 rounded-lg border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-900 shadow-lg p-2.5 max-w-[170px]">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-3 h-3 text-emerald-500"></i>
+          <span class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">You can skip 4 more</span>
+        </div>
+      </div>
+    </div>
+
+    <blockquote class="relative max-w-sm">
+      <p class="text-[13.5px] leading-relaxed text-neutral-700 dark:text-neutral-300 text-pretty">
+        "The 75% calculator alone saved my semester. Now my whole batch tracks attendance here."
+      </p>
+      <footer class="mt-3 flex items-center gap-2">
+        <div class="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-[10px] font-semibold text-white">PR</div>
+        <div>
+          <div class="text-[12px] font-medium">Priya Ramesh</div>
+          <div class="text-[10.5px] text-neutral-500 dark:text-neutral-400">B.Tech CSE · NIT Trichy</div>
+        </div>
+      </footer>
+    </blockquote>
+  </aside>
+
+  <!-- RIGHT — forms -->
+  <main class="flex flex-col">
+    <div class="flex items-center justify-between px-6 py-4 lg:px-10">
+      <a href="index.html" class="lg:hidden flex items-center gap-2">
+        <span class="grid h-7 w-7 place-items-center rounded-md bg-[var(--accent)] text-white">
+          <i data-lucide="graduation-cap" class="w-[15px] h-[15px]" data-stroke-width="2.25"></i>
+        </span>
+        <span class="text-[14px] font-semibold tracking-tight">StudSpace</span>
+      </a>
+      <a href="index.html" class="hidden lg:inline-flex items-center gap-1 text-[12px] text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors">
+        <i data-lucide="arrow-left" class="w-3 h-3"></i> Back to home
+      </a>
+      <button id="theme-toggle" class="grid h-8 w-8 place-items-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/[0.06]">
+        <i data-lucide="moon" class="w-[14px] h-[14px]"></i>
+      </button>
+    </div>
+
+    <div class="flex flex-1 items-center justify-center px-6 pb-12 lg:px-10">
+      <div class="w-full max-w-[380px]">
+        <!-- Tab toggle -->
+        <div class="inline-flex w-full p-0.5 rounded-md border border-neutral-200/80 dark:border-white/[0.06] bg-neutral-100/70 dark:bg-white/[0.03]">
+          <button id="tab-signin" class="tab flex-1 h-9 rounded-[5px] text-[12.5px] font-medium transition-colors">Sign in</button>
+          <button id="tab-signup" class="tab flex-1 h-9 rounded-[5px] text-[12.5px] font-medium transition-colors">Create account</button>
+        </div>
+
+        <!-- Sign In form -->
+        <form id="form-signin" class="form-fade mt-7 flex flex-col gap-4" novalidate>
+          <div>
+            <h1 class="text-[24px] font-semibold tracking-tight ink">Welcome back.</h1>
+            <p class="mt-1 text-[12.5px] text-neutral-500 dark:text-neutral-400">Pick up exactly where you left off.</p>
+          </div>
+
+          <div class="error-box" id="signin-error"></div>
+
+          <div class="field">
+            <span class="field-label">Username</span>
+            <div class="input-wrap">
+              <i data-lucide="at-sign" class="icon"></i>
+              <input id="si-username" type="text" autocomplete="username" placeholder="arjun.m" class="field-input" />
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="flex items-baseline justify-between">
+              <span class="field-label">Password</span>
+            </div>
+            <div class="input-wrap">
+              <i data-lucide="lock" class="icon"></i>
+              <input id="si-password" type="password" autocomplete="current-password" placeholder="••••••••" class="field-input" style="padding-right:36px" />
+              <button type="button" class="reveal absolute right-2 top-1/2 -translate-y-1/2 grid h-6 w-6 place-items-center rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="si-submit" class="submit-btn">
+            Sign in <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+
+          <div class="flex items-center gap-3">
+            <div class="flex-1 h-px bg-neutral-200 dark:bg-white/[0.06]"></div>
+            <span class="text-[11px] text-neutral-400">or</span>
+            <div class="flex-1 h-px bg-neutral-200 dark:bg-white/[0.06]"></div>
+          </div>
+
+          <a href="/oauth2/authorization/google"
+             class="flex items-center justify-center gap-2.5 h-10 w-full rounded-lg border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] text-[13px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-white/[0.07] transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+          </a>
+
+          <p class="text-center text-[12px] text-neutral-500 dark:text-neutral-400">
+            No account? <button type="button" class="text-[var(--accent)] font-medium hover:underline" onclick="switchTab('signup')">Create one — it's free</button>
+          </p>
+        </form>
+
+        <!-- Sign Up form -->
+        <form id="form-signup" class="form-fade mt-7 hidden flex flex-col gap-4" novalidate>
+          <div>
+            <h1 class="text-[24px] font-semibold tracking-tight ink">Make a workspace.</h1>
+            <p class="mt-1 text-[12.5px] text-neutral-500 dark:text-neutral-400">30 seconds. No card. Open to everyone.</p>
+          </div>
+
+          <div class="error-box" id="signup-error"></div>
+
+          <div class="field">
+            <span class="field-label">Full name</span>
+            <div class="input-wrap">
+              <i data-lucide="user" class="icon"></i>
+              <input id="su-name" type="text" autocomplete="name" placeholder="Arjun Mehta" class="field-input" />
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Username</span>
+            <div class="input-wrap">
+              <i data-lucide="at-sign" class="icon"></i>
+              <input id="su-username" type="text" autocomplete="username" placeholder="arjun.m" class="field-input" />
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Email</span>
+            <div class="input-wrap">
+              <i data-lucide="mail" class="icon"></i>
+              <input id="su-email" type="email" autocomplete="email" placeholder="you@anywhere.com" class="field-input" />
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Password</span>
+            <div class="input-wrap">
+              <i data-lucide="lock" class="icon"></i>
+              <input id="su-password" type="password" autocomplete="new-password" placeholder="At least 8 characters" class="field-input" style="padding-right:36px" />
+              <button type="button" class="reveal absolute right-2 top-1/2 -translate-y-1/2 grid h-6 w-6 place-items-center rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            <div class="mt-1 flex gap-1">
+              <div id="pw-1" class="h-1 flex-1 rounded-full bg-neutral-200 dark:bg-white/[0.06] transition-colors"></div>
+              <div id="pw-2" class="h-1 flex-1 rounded-full bg-neutral-200 dark:bg-white/[0.06] transition-colors"></div>
+              <div id="pw-3" class="h-1 flex-1 rounded-full bg-neutral-200 dark:bg-white/[0.06] transition-colors"></div>
+              <div id="pw-4" class="h-1 flex-1 rounded-full bg-neutral-200 dark:bg-white/[0.06] transition-colors"></div>
+            </div>
+            <span id="pw-label" class="text-[10.5px] text-neutral-400">Enter a password</span>
+          </div>
+
+          <p class="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
+            By creating an account you agree to our <a href="#" class="text-neutral-700 dark:text-neutral-300 underline underline-offset-2">terms</a> and <a href="#" class="text-neutral-700 dark:text-neutral-300 underline underline-offset-2">privacy notice</a>.
+          </p>
+
+          <button type="submit" id="su-submit" class="submit-btn">
+            Create my workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+
+          <div class="flex items-center gap-3">
+            <div class="flex-1 h-px bg-neutral-200 dark:bg-white/[0.06]"></div>
+            <span class="text-[11px] text-neutral-400">or</span>
+            <div class="flex-1 h-px bg-neutral-200 dark:bg-white/[0.06]"></div>
+          </div>
+
+          <a href="/oauth2/authorization/google"
+             class="flex items-center justify-center gap-2.5 h-10 w-full rounded-lg border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] text-[13px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-white/[0.07] transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+          </a>
+
+          <p class="text-center text-[12px] text-neutral-500 dark:text-neutral-400">
+            Already have an account? <button type="button" class="text-[var(--accent)] font-medium hover:underline" onclick="switchTab('signin')">Sign in</button>
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 lg:px-10 text-center text-[11px] text-neutral-400 dark:text-neutral-600">
+      © 2026 StudSpace · A workspace for serious students
+    </div>
+  </main>
+</div>
+
+<script>
+  // Theme toggle
+  const root = document.documentElement;
+  if (root.classList.contains("dark")) {
+    document.querySelector("#theme-toggle [data-lucide]")?.setAttribute("data-lucide", "sun");
+  }
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    root.classList.toggle("dark");
+    const dark = root.classList.contains("dark");
+    localStorage.setItem("ss-theme", dark ? "dark" : "light");
+    document.querySelector("#theme-toggle [data-lucide]").setAttribute("data-lucide", dark ? "sun" : "moon");
+    window.lucide?.createIcons();
+  });
+
+  // Tab switching
+  function switchTab(which) {
+    const isSignin = which === "signin";
+    document.getElementById("form-signin").classList.toggle("hidden", !isSignin);
+    document.getElementById("form-signup").classList.toggle("hidden", isSignin);
+    [["tab-signin", isSignin], ["tab-signup", !isSignin]].forEach(([id, active]) => {
+      document.getElementById(id).className = "tab flex-1 h-9 rounded-[5px] text-[12.5px] font-medium transition-colors " + (active
+        ? "bg-white text-neutral-900 shadow-sm dark:bg-white/[0.1] dark:text-white"
+        : "text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100");
+    });
+    const visible = document.getElementById("form-" + which);
+    visible.style.animation = "none"; void visible.offsetWidth; visible.style.animation = "";
+    window.lucide?.createIcons();
+  }
+
+  document.getElementById("tab-signin").addEventListener("click", () => switchTab("signin"));
+  document.getElementById("tab-signup").addEventListener("click", () => switchTab("signup"));
+  switchTab(location.hash === "#signup" ? "signup" : "signin");
+
+  // Helpers
+  function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.add("show");
+  }
+  function hideError(id) {
+    document.getElementById(id).classList.remove("show");
+  }
+  function setLoading(btn, loading, defaultHtml) {
+    btn.disabled = loading;
+    if (loading) {
+      btn.innerHTML = '<svg class="animate-spin w-4 h-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Please wait…';
+    } else {
+      btn.innerHTML = defaultHtml;
+      window.lucide?.createIcons();
+    }
+  }
+
+  // Sign In submit
+  document.getElementById("form-signin").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("si-username").value.trim();
+    const password = document.getElementById("si-password").value;
+    if (!username || !password) { showError("signin-error", "Please enter your username and password."); return; }
+    hideError("signin-error");
+    const btn = document.getElementById("si-submit");
+    setLoading(btn, true, 'Sign in <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>');
+    try {
+      await API.auth.login(username, password);
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      showError("signin-error", err.message || "Invalid username or password. Please try again.");
+      setLoading(btn, false, 'Sign in <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>');
+    }
+  });
+
+  // Sign Up submit
+  document.getElementById("form-signup").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fullName = document.getElementById("su-name").value.trim();
+    const username = document.getElementById("su-username").value.trim();
+    const email = document.getElementById("su-email").value.trim();
+    const password = document.getElementById("su-password").value;
+    if (!fullName || !username || !email || !password) { showError("signup-error", "Please fill in all fields."); return; }
+    if (password.length < 8) { showError("signup-error", "Password must be at least 8 characters."); return; }
+    hideError("signup-error");
+    const btn = document.getElementById("su-submit");
+    setLoading(btn, true, 'Create my workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>');
+    try {
+      await API.auth.register(fullName, username, email, password);
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      showError("signup-error", err.message || "Registration failed. Try a different email or username.");
+      setLoading(btn, false, 'Create my workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>');
+    }
+  });
+
+  // Password reveal
+  document.querySelectorAll(".reveal").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const input = btn.parentElement.querySelector("input");
+      if (!input) return;
+      const showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      btn.querySelector("[data-lucide]")?.setAttribute("data-lucide", showing ? "eye" : "eye-off");
+      window.lucide?.createIcons();
+    });
+  });
+
+  // Password strength
+  const pw = document.getElementById("su-password");
+  const pwLabel = document.getElementById("pw-label");
+  const bars = ["pw-1","pw-2","pw-3","pw-4"].map((id) => document.getElementById(id));
+  pw?.addEventListener("input", (e) => {
+    const v = e.target.value;
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    const colors = ["bg-rose-500","bg-amber-500","bg-amber-500","bg-emerald-500"];
+    const labels = ["Too short","Could be stronger","Reasonable","Strong"];
+    bars.forEach((b, i) => {
+      b.className = "h-1 flex-1 rounded-full transition-colors " + (i < score ? colors[score - 1] : "bg-neutral-200 dark:bg-white/[0.06]");
+    });
+    pwLabel.textContent = v ? (labels[score - 1] || labels[0]) : "Enter a password";
+    pwLabel.className = "text-[10.5px] " + (v && score >= 3 ? "text-emerald-600 dark:text-emerald-400" : v && score === 2 ? "text-amber-600 dark:text-amber-400" : v ? "text-rose-600 dark:text-rose-400" : "text-neutral-400");
+  });
+
+  // Username: lowercase only
+  document.getElementById("su-username")?.addEventListener("input", (e) => {
+    const cursor = e.target.selectionStart;
+    e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+    e.target.setSelectionRange(cursor, cursor);
+  });
+
+  window.lucide?.createIcons();
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #6366f1;
+  --card-bg: #ffffff;
+  --card-border: rgba(229, 229, 229, 0.8);
+  --sidebar-bg: rgba(250,250,250,0.6);
+  --sidebar-border-color: rgba(229,231,235,0.8);
+  --topbar-bg: rgba(255,255,255,0.85);
+  --topbar-border-color: rgba(229,231,235,0.8);
+  --content-bg: #f5f5f5;
+  --bg-base: #f5f5f5;
+  --text-primary: #171717;
+}
+
+html.dark {
+  --card-bg: #111111;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --sidebar-bg: rgba(10,10,10,0.6);
+  --sidebar-border-color: rgba(255,255,255,0.06);
+  --topbar-bg: rgba(10,10,10,0.75);
+  --topbar-border-color: rgba(255,255,255,0.06);
+  --content-bg: #0a0a0a;
+  --bg-base: #0a0a0a;
+  --text-primary: #f0f0f0;
+}
+
+html, body, #root { height: 100%; }
+
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background: #fafafa;
+}
+
+html.dark body { background: #0a0a0a; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); background-clip: content-box; border: 2px solid transparent; }
+html.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); background-clip: content-box; border: 2px solid transparent; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); background-clip: content-box; border: 2px solid transparent; }
+
+@keyframes fade { from { transform: translateY(4px); } to { transform: none; } }
+.page-fade { animation: fade 220ms ease-out both; }
+
+.border-t, .border-b, .border-r, .border-l {
+  border-style: solid !important;
+}
+
+html.dark .border { border-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .border-t { border-top-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .border-b { border-bottom-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .border-r { border-right-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .border-l { border-left-color: rgba(255, 255, 255, 0.08) !important; }
+
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+.shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08) !important;
+}
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08) !important;
+}
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.dark .shadow-sm,
+html.dark .shadow,
+html.dark .shadow-md,
+html.dark .shadow-lg {
+  box-shadow: none !important;
+}
+
+/* FullCalendar overrides */
+.fc {
+  --fc-border-color: rgb(229 229 229 / 0.5);
+  --fc-today-bg-color: transparent;
+  --fc-event-bg-color: transparent;
+  --fc-event-border-color: transparent;
+  --fc-event-text-color: inherit;
+  --fc-small-font-size: 10.5px;
+  --fc-page-bg-color: transparent;
+  --fc-now-indicator-color: var(--accent, #6366f1);
+  font-family: inherit;
+}
+html.dark .fc {
+  --fc-border-color: rgb(255 255 255 / 0.07);
+}
+.fc .fc-col-header-cell-cushion {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(115 115 115);
+  padding: 10px 0;
+  text-decoration: none;
+}
+html.dark .fc .fc-col-header-cell-cushion { color: rgb(163 163 163); }
+.fc .fc-timegrid-slot-label-cushion {
+  font-size: 10px;
+  font-family: ui-monospace, monospace;
+  color: rgb(163 163 163);
+  padding-right: 8px;
+}
+/* Strip default event chrome so eventContent fills completely */
+.fc .fc-timegrid-event,
+.fc .fc-v-event {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.fc .fc-event-main { padding: 0; height: 100%; }
+/* Hover highlight on empty cells */
+.fc .fc-timegrid-slot-lane:hover {
+  background-color: color-mix(in srgb, var(--accent, #6366f1) 4%, transparent);
+  cursor: cell;
+}

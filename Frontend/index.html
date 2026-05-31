@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StudSpace — A workspace for students who care about the details</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class', theme: { extend: {
+    fontFamily: {
+      sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+    },
+  }}}
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+  :root { --accent: #6366f1; --card-bg: #ffffff; --card-border: rgba(229, 229, 229, 0.8); }
+  html.dark { --card-bg: #111111; --card-border: rgba(255, 255, 255, 0.08); }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; background: #fff; color: #0a0a0a; }
+  html.dark body { background: #0a0a0a; color: #fafafa; }
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* Subtle grid backdrop for hero */
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, rgba(10,10,10,0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(10,10,10,0.06) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 30%, transparent 75%);
+            mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 30%, transparent 75%);
+  }
+  html.dark .grid-bg {
+    background-image:
+      linear-gradient(to right, rgba(250,250,250,0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(250,250,250,0.05) 1px, transparent 1px);
+  }
+
+  /* Marquee */
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee { animation: marquee 38s linear infinite; }
+  .marquee-wrap:hover .marquee { animation-play-state: paused; }
+
+  /* Reveal */
+  @keyframes rise { from { transform: translateY(10px); } to { transform: translateY(0); } }
+  .rise { animation: rise 600ms cubic-bezier(.22,1,.36,1) both; }
+
+  /* Scroll-reveal system */
+  [data-reveal] { opacity: 0; transform: translateY(18px);
+    transition: opacity 700ms cubic-bezier(.22,1,.36,1), transform 700ms cubic-bezier(.22,1,.36,1); }
+  [data-reveal].in { opacity: 1; transform: translateY(0); }
+  [data-reveal-stagger] > * { opacity: 0; transform: translateY(14px);
+    transition: opacity 600ms cubic-bezier(.22,1,.36,1), transform 600ms cubic-bezier(.22,1,.36,1); }
+  [data-reveal-stagger].in > * { opacity: 1; transform: translateY(0); }
+  [data-reveal-stagger].in > *:nth-child(1) { transition-delay: 0ms; }
+  [data-reveal-stagger].in > *:nth-child(2) { transition-delay: 70ms; }
+  [data-reveal-stagger].in > *:nth-child(3) { transition-delay: 140ms; }
+  [data-reveal-stagger].in > *:nth-child(4) { transition-delay: 210ms; }
+  [data-reveal-stagger].in > *:nth-child(5) { transition-delay: 280ms; }
+  [data-reveal-stagger].in > *:nth-child(6) { transition-delay: 350ms; }
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal], [data-reveal-stagger] > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .marquee { animation: none !important; }
+  }
+
+  /* Accent picker */
+  .accent-swatch { width: 16px; height: 16px; border-radius: 999px; transition: transform 200ms cubic-bezier(.22,1,.36,1);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
+  .accent-swatch:hover { transform: scale(1.18); }
+  .accent-swatch.active { transform: scale(1.18); box-shadow: 0 0 0 1.5px white, 0 0 0 3px currentColor, inset 0 0 0 1px rgba(0,0,0,0.15); }
+  html.dark .accent-swatch.active { box-shadow: 0 0 0 1.5px #0a0a0a, 0 0 0 3px currentColor, inset 0 0 0 1px rgba(255,255,255,0.2); }
+
+  /* Try-it row slide-in */
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .slide-in { animation: slideIn 280ms cubic-bezier(.22,1,.36,1) both; }
+
+  /* Range slider thumb */
+  input[type=range].wiz-sem { -webkit-appearance: none; appearance: none; }
+  input[type=range].wiz-sem::-webkit-slider-thumb { -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 3px solid white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18); cursor: pointer; }
+  html.dark input[type=range].wiz-sem::-webkit-slider-thumb { border-color: #0a0a0a; }
+  input[type=range].wiz-sem::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); border: 3px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.18); cursor: pointer; }
+
+  /* Wizard step transition */
+  .wiz-step { animation: rise 380ms cubic-bezier(.22,1,.36,1) both; }
+
+  /* Headline gradient — very subtle */
+  .ink {
+    background: linear-gradient(180deg, #0a0a0a 0%, #404040 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  html.dark .ink {
+    background: linear-gradient(180deg, #fafafa 0%, #a3a3a3 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* Soft accent glow */
+  .accent-glow {
+    background: radial-gradient(60% 60% at 50% 0%,
+      color-mix(in oklch, var(--accent) 18%, transparent),
+      transparent 70%);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; border: 2px solid transparent; background-clip: content-box; }
+  html.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); background-clip: content-box; border: 2px solid transparent; }
+
+  /* Core layout border improvements */
+  .border-t, .border-b, .border-r, .border-l {
+    border-style: solid !important;
+  }
+  .border-t {
+    border-top-width: 1px !important;
+    border-top-color: #e4e4e7 !important;
+  }
+  .border-b {
+    border-bottom-width: 1px !important;
+    border-bottom-color: #e4e4e7 !important;
+  }
+  .border-r {
+    border-right-width: 1px !important;
+    border-right-color: #e4e4e7 !important;
+  }
+  .border-l {
+    border-left-width: 1px !important;
+    border-left-color: #e4e4e7 !important;
+  }
+
+  /* Dark mode overrides for borders */
+  html.dark .border {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-t {
+    border-top-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-b {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-r {
+    border-right-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  html.dark .border-l {
+    border-left-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Shadows fallback */
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  }
+  .shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08) !important;
+  }
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08) !important;
+  }
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  html.dark .shadow-sm,
+  html.dark .shadow,
+  html.dark .shadow-md,
+  html.dark .shadow-lg {
+    box-shadow: none !important;
+  }
+</style>
+</head>
+<body class="overflow-x-hidden">
+
+<!-- ────────── Nav ────────── -->
+<nav class="sticky top-0 z-30 backdrop-blur-md bg-white/75 dark:bg-neutral-950/75 border-b border-neutral-200/60 dark:border-white/[0.06]">
+  <div class="mx-auto flex h-14 max-w-[1180px] items-center justify-between px-6">
+    <a href="#" class="flex items-center gap-2">
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-[var(--accent)] text-white shadow-sm">
+        <i data-lucide="graduation-cap" class="w-[15px] h-[15px]" data-stroke-width="2.25"></i>
+      </span>
+      <span class="text-[14px] font-semibold tracking-tight">StudSpace</span>
+    </a>
+
+    <div class="hidden md:flex items-center gap-1 text-[13px]">
+      <a class="px-3 py-1.5 rounded-md text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/70 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-white/[0.04] transition-colors" href="#features">Features</a>
+      <a class="px-3 py-1.5 rounded-md text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/70 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-white/[0.04] transition-colors" href="#attendance">Attendance</a>
+      <a class="px-3 py-1.5 rounded-md text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/70 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-white/[0.04] transition-colors" href="#share">Share</a>
+      <a class="px-3 py-1.5 rounded-md text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/70 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-white/[0.04] transition-colors" href="#try-it">Try it</a>
+      <a class="px-3 py-1.5 rounded-md text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/70 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-white/[0.04] transition-colors" href="#faq">FAQ</a>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <!-- Accent picker -->
+      <div class="hidden sm:flex items-center gap-1.5 mr-1 pr-2 border-r border-neutral-200/70 dark:border-white/[0.06]" role="radiogroup" aria-label="Accent color">
+        <button class="accent-swatch" style="background:#6366f1;color:#6366f1" data-accent="#6366f1" aria-label="Indigo"></button>
+        <button class="accent-swatch" style="background:#8b5cf6;color:#8b5cf6" data-accent="#8b5cf6" aria-label="Violet"></button>
+        <button class="accent-swatch" style="background:#10b981;color:#10b981" data-accent="#10b981" aria-label="Emerald"></button>
+        <button class="accent-swatch" style="background:#f43f5e;color:#f43f5e" data-accent="#f43f5e" aria-label="Rose"></button>
+        <button class="accent-swatch" style="background:#f59e0b;color:#f59e0b" data-accent="#f59e0b" aria-label="Amber"></button>
+      </div>
+      <button id="theme-toggle" class="grid h-8 w-8 place-items-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-white/[0.06]">
+        <i data-lucide="moon" class="w-[14px] h-[14px]"></i>
+      </button>
+      <a href="signin.html" class="hidden sm:inline-flex items-center px-3 h-8 text-[12.5px] font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Sign in</a>
+      <a href="signin.html" class="inline-flex items-center gap-1 px-3 h-8 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[12.5px] font-medium hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors shadow-sm">
+        Get started <i data-lucide="arrow-right" class="w-3 h-3"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ────────── Hero ────────── -->
+<section class="relative">
+  <div class="absolute inset-0 grid-bg pointer-events-none"></div>
+  <div class="absolute inset-x-0 top-0 h-[640px] accent-glow pointer-events-none"></div>
+
+  <div class="relative mx-auto max-w-[1180px] px-6 pt-20 pb-12 sm:pt-28 sm:pb-16">
+    <!-- announcement pill -->
+    <div class="flex justify-center rise">
+      <a href="#" class="inline-flex items-center gap-2 rounded-full border border-neutral-200/80 dark:border-white/[0.08] bg-white/70 dark:bg-white/[0.03] backdrop-blur px-3 py-1 text-[11.5px] font-medium text-neutral-600 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-white/15 transition-colors">
+        <span class="rounded-full bg-[var(--accent)]/10 text-[var(--accent)] px-1.5 py-px text-[10px] font-semibold">New</span>
+        Shareable semester pages are here
+        <i data-lucide="arrow-right" class="w-3 h-3"></i>
+      </a>
+    </div>
+
+    <h1 class="mt-7 text-center text-[44px] sm:text-[58px] lg:text-[68px] font-semibold tracking-[-0.025em] leading-[1.02] ink rise" style="animation-delay:60ms; text-wrap:balance">
+      A workspace for students<br />who care about the details.
+    </h1>
+
+    <p class="mt-5 mx-auto max-w-[600px] text-center text-[15px] sm:text-[16px] leading-relaxed text-neutral-600 dark:text-neutral-400 rise" style="animation-delay:140ms; text-wrap:pretty">
+      One place for every PYQ, notes dump, playlist, and that 75% attendance calculation that keeps you up at night. Built for serious students. Not for selling pdf notes.
+    </p>
+
+    <div class="mt-7 flex flex-col sm:flex-row items-center justify-center gap-2.5 rise" style="animation-delay:220ms">
+      <a href="signin.html" class="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[13px] font-medium hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors shadow-sm">
+        Start free <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </a>
+      <a href="#features" class="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-neutral-700 dark:text-neutral-200 text-[13px] font-medium hover:bg-neutral-50 dark:hover:bg-white/[0.06] transition-colors">
+        <i data-lucide="play" class="w-3.5 h-3.5"></i> Watch the tour <span class="font-mono text-[11px] text-neutral-400">2m</span>
+      </a>
+    </div>
+
+
+    <!-- Product preview window -->
+    <div class="relative mt-16 rise" style="animation-delay:380ms">
+      <!-- glow under -->
+      <div class="absolute -inset-x-8 -inset-y-4 -bottom-10 -z-10 rounded-[24px] pointer-events-none"
+           style="background: radial-gradient(60% 80% at 50% 50%, color-mix(in oklch, var(--accent) 16%, transparent), transparent 70%); filter: blur(40px);"></div>
+
+      <div class="rounded-xl border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-950 shadow-2xl shadow-neutral-900/[0.08] dark:shadow-black/40 overflow-hidden">
+        <!-- chrome -->
+        <div class="flex h-9 items-center gap-2 border-b border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50/70 dark:bg-white/[0.02] px-3">
+          <span class="h-2.5 w-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
+          <div class="ml-3 flex-1 max-w-[280px] rounded-md bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-white/[0.06] px-2 py-0.5 text-[10.5px] text-neutral-500 dark:text-neutral-400 font-mono truncate">
+            studspace.app/dashboard
+          </div>
+        </div>
+
+        <!-- preview body — mini dashboard -->
+        <div class="grid grid-cols-[180px_1fr] min-h-[360px]">
+          <!-- mini sidebar -->
+          <aside class="border-r border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50/40 dark:bg-white/[0.02] p-2.5">
+            <div class="flex items-center gap-1.5 px-1.5 py-1 mb-2">
+              <span class="grid h-5 w-5 place-items-center rounded bg-[var(--accent)] text-white"><i data-lucide="graduation-cap" class="w-[10px] h-[10px]"></i></span>
+              <span class="text-[11px] font-semibold tracking-tight">StudSpace</span>
+            </div>
+            <div class="flex flex-col gap-0.5">
+              <div class="flex items-center gap-2 rounded-md bg-neutral-200/60 dark:bg-white/[0.08] px-2 py-1 text-[11px] font-medium">
+                <i data-lucide="layout-dashboard" class="w-3 h-3"></i> Dashboard
+              </div>
+              <div class="flex items-center gap-2 rounded-md px-2 py-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                <i data-lucide="book-open" class="w-3 h-3"></i> Semesters
+              </div>
+              <div class="flex items-center gap-2 rounded-md px-2 py-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                <i data-lucide="calendar-check-2" class="w-3 h-3"></i> Attendance
+              </div>
+              <div class="flex items-center gap-2 rounded-md px-2 py-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                <i data-lucide="user" class="w-3 h-3"></i> Profile
+              </div>
+            </div>
+            <div class="mt-4 px-1.5 text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Pinned</div>
+            <div class="mt-1 flex flex-col gap-0.5">
+              <div class="flex items-center gap-1.5 px-2 py-1 text-[11px] text-neutral-500 dark:text-neutral-400 truncate"><span class="h-1 w-1 rounded-full bg-[var(--accent)]"></span> Operating Systems</div>
+              <div class="flex items-center gap-1.5 px-2 py-1 text-[11px] text-neutral-500 dark:text-neutral-400 truncate"><span class="h-1 w-1 rounded-full bg-[var(--accent)]"></span> Database Systems</div>
+            </div>
+          </aside>
+
+          <!-- mini main -->
+          <div class="p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[13px] font-semibold tracking-tight">Good morning, Arjun 👋</div>
+                <div class="text-[10.5px] text-neutral-500 dark:text-neutral-400">Spring '26 · 6 courses · 82% attendance</div>
+              </div>
+              <div class="hidden sm:flex items-center gap-1.5">
+                <button class="h-6 px-2 text-[10.5px] rounded border border-neutral-200/80 dark:border-white/[0.08]">Today</button>
+                <button class="h-6 px-2 text-[10.5px] rounded bg-neutral-900 dark:bg-white text-white dark:text-neutral-900">+ Add</button>
+              </div>
+            </div>
+            <!-- mini stats -->
+            <div class="mt-3 grid grid-cols-4 gap-2">
+              <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-2">
+                <div class="text-[8.5px] uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-medium flex items-center gap-1"><i data-lucide="book-open" class="w-2.5 h-2.5"></i> Courses</div>
+                <div class="mt-1 text-[18px] font-semibold tabular-nums tracking-tight">6</div>
+              </div>
+              <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-2 relative">
+                <div class="text-[8.5px] uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-medium flex items-center gap-1"><i data-lucide="calendar-check-2" class="w-2.5 h-2.5"></i> Attendance</div>
+                <div class="mt-1 text-[18px] font-semibold tabular-nums tracking-tight">82%</div>
+                <svg class="absolute top-1.5 right-1.5 -rotate-90" width="28" height="28" viewBox="0 0 28 28">
+                  <circle cx="14" cy="14" r="11" stroke="currentColor" stroke-width="2.5" fill="none" class="text-neutral-200 dark:text-white/[0.08]" />
+                  <circle cx="14" cy="14" r="11" stroke="var(--accent)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="12.4" />
+                </svg>
+              </div>
+              <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-2">
+                <div class="text-[8.5px] uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-medium flex items-center gap-1"><i data-lucide="bookmark" class="w-2.5 h-2.5"></i> Resources</div>
+                <div class="mt-1 text-[18px] font-semibold tabular-nums tracking-tight">47</div>
+              </div>
+              <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-2">
+                <div class="text-[8.5px] uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-medium flex items-center gap-1"><i data-lucide="folder-git-2" class="w-2.5 h-2.5"></i> Projects</div>
+                <div class="mt-1 text-[18px] font-semibold tabular-nums tracking-tight">3</div>
+              </div>
+            </div>
+
+            <!-- mini course cards -->
+            <div class="mt-4 grid grid-cols-3 gap-2">
+              <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-2.5">
+                <div class="font-mono text-[8.5px] text-neutral-400">CS3401</div>
+                <div class="mt-0.5 text-[11.5px] font-semibold tracking-tight">Operating Systems</div>
+                <div class="mt-2 flex items-baseline justify-between"><span class="text-[10px] text-neutral-500">Attendance</span><span class="text-[12px] font-semibold tabular-nums">88%</span></div>
+                <div class="mt-1.5 h-[3px] rounded-full bg-neutral-100 dark:bg-white/[0.06]"><div class="h-full rounded-full bg-[var(--accent)]" style="width:64%"></div></div>
+              </div>
+              <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-2.5">
+                <div class="font-mono text-[8.5px] text-neutral-400">CS3402</div>
+                <div class="mt-0.5 text-[11.5px] font-semibold tracking-tight">Database Systems</div>
+                <div class="mt-2 flex items-baseline justify-between"><span class="text-[10px] text-neutral-500">Attendance</span><span class="text-[12px] font-semibold tabular-nums">91%</span></div>
+                <div class="mt-1.5 h-[3px] rounded-full bg-neutral-100 dark:bg-white/[0.06]"><div class="h-full rounded-full bg-[var(--accent)]" style="width:58%"></div></div>
+              </div>
+              <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-2.5">
+                <div class="font-mono text-[8.5px] text-neutral-400 flex items-center gap-1">CS3403 <span class="rounded-sm bg-amber-50 dark:bg-amber-500/10 px-1 py-px text-[8px] font-medium text-amber-700 dark:text-amber-300">Low</span></div>
+                <div class="mt-0.5 text-[11.5px] font-semibold tracking-tight">Computer Networks</div>
+                <div class="mt-2 flex items-baseline justify-between"><span class="text-[10px] text-neutral-500">Attendance</span><span class="text-[12px] font-semibold text-amber-600 tabular-nums">74%</span></div>
+                <div class="mt-1.5 h-[3px] rounded-full bg-neutral-100 dark:bg-white/[0.06]"><div class="h-full rounded-full bg-[var(--accent)]" style="width:71%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── Feature ribbon ────────── -->
+<section class="border-y border-neutral-200/60 dark:border-white/[0.06] bg-neutral-50/50 dark:bg-white/[0.015] py-8 overflow-hidden marquee-wrap">
+  <div class="mx-auto max-w-[1180px] px-6">
+    <p class="text-center text-[11px] font-medium uppercase tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
+      Everything you need, in one place
+    </p>
+    <div class="mt-5 relative">
+      <div class="flex gap-12 marquee whitespace-nowrap text-[13.5px] font-semibold text-neutral-400 dark:text-neutral-500">
+        <span class="flex items-center gap-12">
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> Attendance Tracker</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> Resource Library</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> CGPA Calculator</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> Timetable Planner</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> Semester Sharing</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> PDF Upload</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> Attendance Tracker</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> Resource Library</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> CGPA Calculator</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> Timetable Planner</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> Semester Sharing</span>
+          <span class="flex items-center gap-2"><span class="text-[var(--accent)]">✦</span> PDF Upload</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── Build your StudSpace (onboarding wizard) ────────── -->
+<section id="wizard" class="py-24 border-t border-neutral-200/60 dark:border-white/[0.06]">
+  <div class="mx-auto max-w-[1180px] px-6">
+    <div class="max-w-2xl mx-auto text-center" data-reveal>
+      <span class="inline-block rounded-md bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider">Try in 30 seconds</span>
+      <h2 class="mt-4 text-[32px] sm:text-[40px] font-semibold tracking-[-0.022em] leading-[1.05] ink" style="text-wrap:balance">
+        Build your StudSpace, live.
+      </h2>
+      <p class="mt-3 text-[14.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed text-pretty">
+        Three questions. We'll show you the workspace you'd land on if you signed up right now — with courses that look like yours.
+      </p>
+    </div>
+
+    <div class="mt-10 mx-auto max-w-[760px] rounded-xl border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-950 shadow-xl shadow-neutral-900/[0.06] dark:shadow-black/40 overflow-hidden" data-reveal>
+      <div class="wiz-dots flex items-center gap-3 border-b border-neutral-200/70 dark:border-white/[0.06] bg-neutral-50/40 dark:bg-white/[0.02] px-5 py-3 overflow-x-auto"></div>
+      <div class="wiz-steps p-6 sm:p-7"></div>
+    </div>
+    <div class="wiz-preview"></div>
+  </div>
+</section>
+
+<!-- ────────── Features ────────── -->
+<section id="features" class="py-24">
+  <div class="mx-auto max-w-[1180px] px-6">
+    <div class="max-w-2xl" data-reveal>
+      <span class="inline-block rounded-md bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider">Built for studying</span>
+      <h2 class="mt-4 text-[32px] sm:text-[40px] font-semibold tracking-[-0.022em] leading-[1.05] ink">
+        Built for the way you actually study.
+      </h2>
+      <p class="mt-3 text-[14.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+        Not for managing your "academic brand." Not for selling notes. Just a clean place to keep what matters and find it again next week.
+      </p>
+    </div>
+
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4" data-reveal-stagger>
+      <!-- Feature 1 -->
+      <div class="group rounded-xl border border-neutral-200/80 dark:border-white/[0.08] p-6 hover:border-neutral-300 dark:hover:border-white/15 transition-colors">
+        <div class="grid h-9 w-9 place-items-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)]">
+          <i data-lucide="folder" class="w-4 h-4"></i>
+        </div>
+        <h3 class="mt-5 text-[16px] font-semibold tracking-tight">One place per course</h3>
+        <p class="mt-1.5 text-[13px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+          PYQs, playlists, notes, links, and that one PDF your senior sent. Tagged, searchable, never lost in WhatsApp.
+        </p>
+        <div class="mt-5 rounded-md border border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50/60 dark:bg-white/[0.02] p-3 text-[11px] flex flex-col gap-1.5">
+          <div class="flex items-center gap-2">
+            <span class="rounded bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 px-1.5 py-0.5 text-[9.5px] font-medium">PYQ</span>
+            <span class="truncate text-neutral-700 dark:text-neutral-300">Mid-sem 2023 — solved</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="rounded bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 px-1.5 py-0.5 text-[9.5px] font-medium">Playlist</span>
+            <span class="truncate text-neutral-700 dark:text-neutral-300">Neso Academy — Full course</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="rounded bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 text-[9.5px] font-medium">Notes</span>
+            <span class="truncate text-neutral-700 dark:text-neutral-300">Memory paging summary</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="group rounded-xl border border-neutral-200/80 dark:border-white/[0.08] p-6 hover:border-neutral-300 dark:hover:border-white/15 transition-colors">
+        <div class="grid h-9 w-9 place-items-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)]">
+          <i data-lucide="calendar-check-2" class="w-4 h-4"></i>
+        </div>
+        <h3 class="mt-5 text-[16px] font-semibold tracking-tight">75% without the math</h3>
+        <p class="mt-1.5 text-[13px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+          Tap present, absent, or cancelled. We do the running totals and tell you exactly how many more you can skip.
+        </p>
+        <div class="mt-5 rounded-md border border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50/60 dark:bg-white/[0.02] p-3">
+          <div class="flex items-center gap-2">
+            <div class="relative">
+              <svg width="38" height="38" viewBox="0 0 38 38" class="-rotate-90">
+                <circle cx="19" cy="19" r="15" stroke="currentColor" stroke-width="3" fill="none" class="text-neutral-200 dark:text-white/[0.08]" />
+                <circle cx="19" cy="19" r="15" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="22.6" />
+              </svg>
+              <span class="absolute inset-0 grid place-items-center text-[10px] font-semibold tabular-nums text-emerald-600">82%</span>
+            </div>
+            <div class="text-[11px] leading-snug">
+              <div class="font-semibold text-emerald-700 dark:text-emerald-300">You can skip 4 more classes</div>
+              <div class="text-neutral-500 dark:text-neutral-400">Above 75% threshold</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="group rounded-xl border border-neutral-200/80 dark:border-white/[0.08] p-6 hover:border-neutral-300 dark:hover:border-white/15 transition-colors">
+        <div class="grid h-9 w-9 place-items-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)]">
+          <i data-lucide="share-2" class="w-4 h-4"></i>
+        </div>
+        <h3 class="mt-5 text-[16px] font-semibold tracking-tight">Share with your batch</h3>
+        <p class="mt-1.5 text-[13px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+          One link, no login. Your semester page becomes a clean, public resource library juniors will actually use.
+        </p>
+        <div class="mt-5 rounded-md border border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50/60 dark:bg-white/[0.02] p-3 flex items-center gap-2">
+          <i data-lucide="link" class="w-3.5 h-3.5 text-neutral-400"></i>
+          <span class="font-mono text-[11px] text-neutral-700 dark:text-neutral-300 truncate flex-1">studspace.app/<span class="text-[var(--accent)]">arjun.m</span>/s6</span>
+          <button class="rounded border border-neutral-200/80 dark:border-white/[0.08] px-1.5 py-0.5 text-[10px] font-medium">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── Attendance showcase ────────── -->
+<section id="attendance" class="py-24 border-t border-neutral-200/60 dark:border-white/[0.06]">
+  <div class="mx-auto max-w-[1180px] px-6 grid lg:grid-cols-2 gap-14 items-center">
+    <div data-reveal>
+      <span class="inline-block rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider">Attendance</span>
+      <h2 class="mt-4 text-[32px] sm:text-[40px] font-semibold tracking-[-0.022em] leading-[1.05] ink" style="text-wrap:balance">
+        The math is done. You just tap.
+      </h2>
+      <p class="mt-3 text-[14.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed text-pretty">
+        Mark a class in two seconds. Get a real-time read on whether you're safe, plus a precise count of how many bunks you have left before the 75% bar hits.
+      </p>
+      <ul class="mt-6 flex flex-col gap-3">
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 grid h-5 w-5 place-items-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] shrink-0">
+            <i data-lucide="check" class="w-3 h-3" data-stroke-width="3"></i>
+          </span>
+          <div>
+            <div class="text-[13.5px] font-medium">Cancelled classes don't count</div>
+            <div class="text-[12px] text-neutral-500 dark:text-neutral-400">We exclude them from the denominator. The way your college actually calculates it.</div>
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 grid h-5 w-5 place-items-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)] shrink-0">
+            <i data-lucide="check" class="w-3 h-3" data-stroke-width="3"></i>
+          </span>
+          <div>
+            <div class="text-[13.5px] font-medium">Custom thresholds</div>
+            <div class="text-[12px] text-neutral-500 dark:text-neutral-400">75%, 80%, or whatever's required for your program. Per-course overrides too.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Visual: attendance card mockup -->
+    <div class="relative" data-reveal>
+      <div class="absolute -inset-10 -z-10 rounded-3xl" style="background: radial-gradient(50% 60% at 50% 50%, color-mix(in oklch, var(--accent) 12%, transparent), transparent 70%); filter: blur(40px);"></div>
+      <div class="rounded-xl border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-950 shadow-xl shadow-neutral-900/[0.06] dark:shadow-black/40 p-5">
+        <!-- header -->
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-mono text-neutral-400">CS3403</div>
+            <div class="mt-0.5 text-[14px] font-semibold tracking-tight">Computer Networks</div>
+          </div>
+          <span class="rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2 py-0.5 text-[10.5px] font-semibold">Below 75%</span>
+        </div>
+
+        <!-- summary -->
+        <div class="mt-4 flex items-center gap-4 rounded-md bg-amber-50/60 dark:bg-amber-500/[0.06] p-3">
+          <div class="relative">
+            <svg width="56" height="56" viewBox="0 0 56 56" class="-rotate-90">
+              <circle cx="28" cy="28" r="22" stroke="currentColor" stroke-width="4" fill="none" class="text-amber-200 dark:text-amber-500/20" />
+              <circle cx="28" cy="28" r="22" stroke="#f59e0b" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="35.9" />
+            </svg>
+            <span class="absolute inset-0 grid place-items-center text-[14px] font-semibold tabular-nums text-amber-700 dark:text-amber-300">74%</span>
+          </div>
+          <div class="flex-1">
+            <div class="text-[12.5px] font-semibold text-amber-700 dark:text-amber-300">You need <span class="tabular-nums">2 more classes</span> to reach 75%</div>
+            <div class="mt-0.5 text-[11px] text-neutral-600 dark:text-neutral-400 tabular-nums">17 / 23 attended · 2 cancelled</div>
+          </div>
+        </div>
+
+        <!-- rows -->
+        <div class="mt-4 flex flex-col gap-1">
+          <div class="flex items-center gap-3 rounded-md bg-emerald-50/50 dark:bg-emerald-500/[0.05] px-2.5 py-1.5">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+            <span class="font-mono text-[11px] text-neutral-500 dark:text-neutral-400 w-14">Mar 18</span>
+            <span class="text-[11px] text-neutral-400 w-8">Wed</span>
+            <span class="ml-auto text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Present</span>
+          </div>
+          <div class="flex items-center gap-3 rounded-md bg-rose-50/50 dark:bg-rose-500/[0.05] px-2.5 py-1.5">
+            <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+            <span class="font-mono text-[11px] text-neutral-500 dark:text-neutral-400 w-14">Mar 15</span>
+            <span class="text-[11px] text-neutral-400 w-8">Sun</span>
+            <span class="ml-auto text-[11px] font-medium text-rose-700 dark:text-rose-300">Absent</span>
+          </div>
+          <div class="flex items-center gap-3 rounded-md bg-neutral-50/70 dark:bg-white/[0.02] px-2.5 py-1.5">
+            <span class="h-1.5 w-1.5 rounded-full bg-neutral-300"></span>
+            <span class="font-mono text-[11px] text-neutral-500 dark:text-neutral-400 w-14">Mar 13</span>
+            <span class="text-[11px] text-neutral-400 w-8">Fri</span>
+            <span class="ml-auto text-[11px] font-medium text-neutral-500">Cancelled</span>
+          </div>
+          <div class="flex items-center gap-3 rounded-md bg-emerald-50/50 dark:bg-emerald-500/[0.05] px-2.5 py-1.5">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+            <span class="font-mono text-[11px] text-neutral-500 dark:text-neutral-400 w-14">Mar 11</span>
+            <span class="text-[11px] text-neutral-400 w-8">Wed</span>
+            <span class="ml-auto text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Present</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── Share preview ────────── -->
+<section id="share" class="py-24 border-t border-neutral-200/60 dark:border-white/[0.06]">
+  <div class="mx-auto max-w-[1180px] px-6 grid lg:grid-cols-2 gap-14 items-center">
+    <!-- Left: visual -->
+    <div class="order-2 lg:order-1 relative" data-reveal>
+      <div class="rounded-xl border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-950 shadow-xl shadow-neutral-900/[0.06] dark:shadow-black/40 overflow-hidden">
+        <div class="flex h-9 items-center gap-2 border-b border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50/70 dark:bg-white/[0.02] px-3">
+          <span class="h-2.5 w-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
+          <div class="ml-3 flex-1 max-w-[300px] rounded-md bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-white/[0.06] px-2 py-0.5 text-[10.5px] text-neutral-500 dark:text-neutral-400 font-mono truncate">
+            studspace.app/arjun.m/s6
+          </div>
+          <span class="text-[10px] text-neutral-400">Public</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-3">
+            <div class="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-[12px] font-semibold">AM</div>
+            <div>
+              <div class="text-[13px] font-semibold tracking-tight">Arjun Mehta</div>
+              <div class="text-[10.5px] text-neutral-500 dark:text-neutral-400 font-mono">@arjun.m · Spring '26</div>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-1.5">
+            <span class="inline-flex items-center gap-1 rounded-md border border-neutral-200/80 dark:border-white/[0.08] px-1.5 py-0.5 text-[10.5px] text-neutral-600 dark:text-neutral-300"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.13 1 1 4.13 1 8c0 3.1 2 5.72 4.78 6.65.35.07.48-.15.48-.34 0-.17-.01-.62-.01-1.22-1.94.42-2.35-.94-2.35-.94-.32-.81-.78-1.02-.78-1.02-.64-.43.05-.42.05-.42.7.05 1.07.72 1.07.72.63 1.08 1.65.77 2.05.59.06-.46.25-.77.45-.95-1.56-.18-3.2-.78-3.2-3.47 0-.77.28-1.39.72-1.88-.07-.18-.31-.89.07-1.85 0 0 .59-.19 1.94.72.56-.16 1.17-.23 1.77-.23.6 0 1.21.08 1.77.23 1.35-.91 1.94-.72 1.94-.72.39.96.14 1.67.07 1.85.45.49.72 1.11.72 1.88 0 2.69-1.64 3.29-3.2 3.46.25.22.48.65.48 1.32 0 .95-.01 1.71-.01 1.95 0 .19.13.41.49.34A7 7 0 0 0 15 8c0-3.87-3.13-7-7-7Z"/></svg> github</span>
+            <span class="inline-flex items-center gap-1 rounded-md border border-neutral-200/80 dark:border-white/[0.08] px-1.5 py-0.5 text-[10.5px] text-neutral-600 dark:text-neutral-300"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm2.2 4.4a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4ZM3 7v6h2.4V7H3Zm4 0v6h2.4V9.7c0-.7.4-1.2 1.1-1.2.6 0 1 .4 1 1.2V13H13V9.3c0-1.8-1-2.5-2.2-2.5-.9 0-1.4.5-1.7 1V7H7Z"/></svg> linkedin</span>
+            <span class="inline-flex items-center gap-1 rounded-md border border-neutral-200/80 dark:border-white/[0.08] px-1.5 py-0.5 text-[10.5px] text-neutral-600 dark:text-neutral-300"><i data-lucide="file-text" class="w-2.5 h-2.5"></i> resume</span>
+          </div>
+
+          <div class="mt-5 flex flex-col gap-2">
+            <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-3">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] text-neutral-400">CS3401</span>
+                <span class="text-[12.5px] font-semibold tracking-tight">Operating Systems</span>
+                <span class="ml-auto text-[10.5px] text-neutral-500">12 resources</span>
+              </div>
+              <div class="mt-2 flex flex-col gap-1">
+                <div class="flex items-center gap-2 text-[11px]"><span class="rounded bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 px-1 py-px text-[9px] font-medium">PYQ</span><span class="truncate text-neutral-700 dark:text-neutral-300">Mid-sem 2023 — solved</span></div>
+                <div class="flex items-center gap-2 text-[11px]"><span class="rounded bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 px-1 py-px text-[9px] font-medium">Notes</span><span class="truncate text-neutral-700 dark:text-neutral-300">Deadlock handling — handwritten</span></div>
+              </div>
+            </div>
+            <div class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] p-3">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] text-neutral-400">CS3402</span>
+                <span class="text-[12.5px] font-semibold tracking-tight">Database Systems</span>
+                <span class="ml-auto text-[10.5px] text-neutral-500">9 resources</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-neutral-400 dark:text-neutral-500">
+            <span class="grid h-3.5 w-3.5 place-items-center rounded bg-[var(--accent)] text-white"><i data-lucide="graduation-cap" class="w-2 h-2"></i></span>
+            built with StudSpace
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: copy -->
+    <div class="order-1 lg:order-2" data-reveal>
+      <span class="inline-block rounded-md bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider">Share</span>
+      <h2 class="mt-4 text-[32px] sm:text-[40px] font-semibold tracking-[-0.022em] leading-[1.05] ink" style="text-wrap:balance">
+        The senior link your juniors will actually save.
+      </h2>
+      <p class="mt-3 text-[14.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed text-pretty">
+        Make any semester public with one toggle. Get a clean, no-login URL with your courses, resources, and handles. Updates push live — no exporting, no re-uploading.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-2">
+        <a href="signin.html" class="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[13px] font-medium hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors shadow-sm">
+          Try sharing <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── Try-it: mini resource adder ────────── -->
+<section id="try-it" class="py-24 border-t border-neutral-200/60 dark:border-white/[0.06]">
+  <div class="mx-auto max-w-[1180px] px-6 grid lg:grid-cols-2 gap-14 items-center">
+    <div data-reveal>
+      <span class="inline-block rounded-md bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider">Live demo</span>
+      <h2 class="mt-4 text-[32px] sm:text-[40px] font-semibold tracking-[-0.022em] leading-[1.05] ink" style="text-wrap:balance">
+        Add a resource.<br />Watch it land.
+      </h2>
+      <p class="mt-3 text-[14.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed text-pretty">
+        Pick a type, give it a name, hit add. That's the whole flow — same in the real app.
+      </p>
+      <ul class="mt-5 flex flex-col gap-2 text-[12.5px] text-neutral-600 dark:text-neutral-400">
+        <li class="flex items-center gap-2"><i data-lucide="tag" class="w-3.5 h-3.5 text-neutral-400"></i> Tag each resource: PYQ, Playlist, Notes, Link, or Other</li>
+        <li class="flex items-center gap-2"><i data-lucide="upload" class="w-3.5 h-3.5 text-neutral-400"></i> Upload PDFs directly — no Drive link needed</li>
+        <li class="flex items-center gap-2"><i data-lucide="link" class="w-3.5 h-3.5 text-neutral-400"></i> Or paste any URL — Drive, YouTube, GitHub, anything</li>
+        <li class="flex items-center gap-2"><i data-lucide="share-2" class="w-3.5 h-3.5 text-neutral-400"></i> Resources show up on your shared semester page</li>
+      </ul>
+    </div>
+
+    <!-- Interactive card -->
+    <div class="relative" data-reveal>
+      <div class="absolute -inset-10 -z-10 rounded-3xl pointer-events-none" style="background: radial-gradient(50% 60% at 50% 50%, color-mix(in oklch, var(--accent) 14%, transparent), transparent 70%); filter: blur(40px);"></div>
+      <div class="rounded-xl border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-950 shadow-xl shadow-neutral-900/[0.06] dark:shadow-black/40">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-neutral-200/70 dark:border-white/[0.06]">
+          <div class="flex items-center gap-2">
+            <i data-lucide="plus-square" class="w-3.5 h-3.5 text-neutral-400"></i>
+            <span class="text-[12px] font-semibold tracking-tight">New resource</span>
+            <span class="font-mono text-[10px] text-neutral-400">· CS3401</span>
+          </div>
+          <span class="text-[11px] text-neutral-400"><span class="try-count tabular-nums">2</span> in this course</span>
+        </div>
+        <div class="p-4 flex flex-col gap-3">
+          <div>
+            <div class="text-[10.5px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">Type</div>
+            <div class="try-types flex flex-wrap gap-1.5"></div>
+          </div>
+          <div>
+            <div class="text-[10.5px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">Title</div>
+            <div class="flex gap-2">
+              <input class="try-input h-9 flex-1 rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-2.5 text-[12.5px] text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400 outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-shadow" placeholder="e.g. OS Mid-sem 2023 — solved" />
+              <button class="try-add inline-flex items-center gap-1 h-9 px-3 rounded-md bg-[var(--accent)] text-white text-[12.5px] font-medium hover:opacity-90 transition-opacity shadow-sm">
+                <i data-lucide="plus" class="w-3.5 h-3.5" data-stroke-width="2.5"></i> Add
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-neutral-200/70 dark:border-white/[0.06] bg-neutral-50/40 dark:bg-white/[0.015]">
+          <div class="px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Resources</div>
+          <div class="try-list -mt-1 px-2 pb-3 flex flex-col gap-0.5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── How it stays free ────────── -->
+<section id="free" class="py-24 border-t border-neutral-200/60 dark:border-white/[0.06]">
+  <div class="mx-auto max-w-[1180px] px-6">
+    <div class="max-w-2xl mx-auto text-center" data-reveal>
+      <span class="inline-block rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider">Made by me</span>
+      <h2 class="mt-4 text-[32px] sm:text-[40px] font-semibold tracking-[-0.022em] leading-[1.05] ink" style="text-wrap:balance">
+        Free. No catch. No "pro" tier.
+      </h2>
+      <p class="mt-3 text-[14.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed text-pretty">
+        Built solo by a student, for students. StudSpace will always be free — sign up with email or Google, no institution verification required, no paywalled features. Ever.
+      </p>
+    </div>
+
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto" data-reveal-stagger>
+      <div class="rounded-xl border border-neutral-200/80 dark:border-white/[0.08] p-6">
+        <div class="grid h-9 w-9 place-items-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)]">
+          <i data-lucide="heart" class="w-4 h-4"></i>
+        </div>
+        <h3 class="mt-5 text-[15px] font-semibold tracking-tight">Built solo, between classes</h3>
+        <p class="mt-1.5 text-[13px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+          A personal project born out of real frustration — scattered notes, missed attendance counts, no single place to track it all. Built alone, one feature at a time.
+        </p>
+      </div>
+      <div class="rounded-xl border border-neutral-200/80 dark:border-white/[0.08] p-6">
+        <div class="grid h-9 w-9 place-items-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)]">
+          <i data-lucide="server" class="w-4 h-4"></i>
+        </div>
+        <h3 class="mt-5 text-[15px] font-semibold tracking-tight">Tiny infra footprint</h3>
+        <p class="mt-1.5 text-[13px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+          Everything runs on a single small server. Link resources from anywhere — Drive, YouTube, GitHub — or upload PDFs directly. Your call.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-8 text-center" data-reveal>
+      <a href="signin.html" class="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[13px] font-medium hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors shadow-sm">
+        Start using StudSpace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </a>
+      <p class="mt-3 text-[11.5px] text-neutral-500 dark:text-neutral-500">Free for everyone. No verification. No card. No "upgrade for X" nag.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── FAQ ────────── -->
+<section id="faq" class="py-24 border-t border-neutral-200/60 dark:border-white/[0.06]">
+  <div class="mx-auto max-w-[840px] px-6">
+    <h2 class="text-[32px] sm:text-[40px] font-semibold tracking-[-0.022em] leading-[1.05] ink text-center" data-reveal>Questions, briefly.</h2>
+    <div class="mt-10 flex flex-col" data-reveal-stagger>
+      <details class="group border-t border-neutral-200/80 dark:border-white/[0.06] py-5">
+        <summary class="flex items-center justify-between cursor-pointer list-none">
+          <span class="text-[15px] font-medium">Is it really free?</span>
+          <i data-lucide="plus" class="w-4 h-4 text-neutral-400 transition-transform group-open:rotate-45"></i>
+        </summary>
+        <p class="mt-3 text-[13.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed">Yes. Create an account with your email or sign in with Google — no card, no institution verification, no catch. Everything is free.</p>
+      </details>
+      <details class="group border-t border-neutral-200/80 dark:border-white/[0.06] py-5">
+        <summary class="flex items-center justify-between cursor-pointer list-none">
+          <span class="text-[15px] font-medium">Do you sell my notes / data?</span>
+          <i data-lucide="plus" class="w-4 h-4 text-neutral-400 transition-transform group-open:rotate-45"></i>
+        </summary>
+        <p class="mt-3 text-[13.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed">No. Private semesters stay private. Public ones are public — but you control which is which, per semester, at any time.</p>
+      </details>
+      <details class="group border-t border-neutral-200/80 dark:border-white/[0.06] py-5">
+        <summary class="flex items-center justify-between cursor-pointer list-none">
+          <span class="text-[15px] font-medium">Does the attendance calculator match my college's rule?</span>
+          <i data-lucide="plus" class="w-4 h-4 text-neutral-400 transition-transform group-open:rotate-45"></i>
+        </summary>
+        <p class="mt-3 text-[13.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed">Usually yes — cancelled classes don't count toward the denominator, and the threshold is configurable. Set a global default or override it per course.</p>
+      </details>
+      <details class="group border-t border-b border-neutral-200/80 dark:border-white/[0.06] py-5">
+        <summary class="flex items-center justify-between cursor-pointer list-none">
+          <span class="text-[15px] font-medium">How do I add my existing resources?</span>
+          <i data-lucide="plus" class="w-4 h-4 text-neutral-400 transition-transform group-open:rotate-45"></i>
+        </summary>
+        <p class="mt-3 text-[13.5px] text-neutral-600 dark:text-neutral-400 leading-relaxed">StudSpace is URL-based — paste any link (Google Drive, YouTube, OneDrive, anything with a URL) and it's added as a resource. Your files stay where they are; you just link them here.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── Final CTA ────────── -->
+<section class="relative py-24 border-t border-neutral-200/60 dark:border-white/[0.06] overflow-hidden">
+  <div class="absolute inset-0 accent-glow pointer-events-none"></div>
+  <div class="relative mx-auto max-w-[1180px] px-6 text-center">
+    <h2 class="text-[36px] sm:text-[48px] font-semibold tracking-[-0.022em] leading-[1.05] ink" style="text-wrap:balance">
+      Spend the semester studying.<br />Not organizing the studying.
+    </h2>
+    <div class="mt-7 flex justify-center">
+      <a href="signin.html" class="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-md bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[14px] font-medium hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors shadow-sm">
+        Start free <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ────────── Footer ────────── -->
+<footer class="border-t border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50/40 dark:bg-white/[0.015]">
+  <div class="mx-auto max-w-[1180px] px-6 py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+    <!-- Brand -->
+    <div class="flex items-center gap-2">
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-[var(--accent)] text-white shrink-0">
+        <i data-lucide="graduation-cap" class="w-[15px] h-[15px]" data-stroke-width="2.25"></i>
+      </span>
+      <span class="text-[14px] font-semibold tracking-tight">StudSpace</span>
+    </div>
+
+    <!-- Tech stack -->
+    <div class="flex flex-wrap items-center gap-2 text-[11.5px] text-neutral-500 dark:text-neutral-400">
+      <span class="font-medium text-neutral-700 dark:text-neutral-300">Built with</span>
+      <span class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-2 py-0.5">Spring Boot</span>
+      <span class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-2 py-0.5">PostgreSQL</span>
+      <span class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-2 py-0.5">React</span>
+      <span class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-2 py-0.5">Tailwind CSS</span>
+      <span class="rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-2 py-0.5">Docker</span>
+    </div>
+
+    <!-- GitHub -->
+    <a href="#" class="inline-flex items-center gap-1.5 text-[12.5px] text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors shrink-0">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.13 1 1 4.13 1 8c0 3.1 2 5.72 4.78 6.65.35.07.48-.15.48-.34 0-.17-.01-.62-.01-1.22-1.94.42-2.35-.94-2.35-.94-.32-.81-.78-1.02-.78-1.02-.64-.43.05-.42.05-.42.7.05 1.07.72 1.07.72.63 1.08 1.65.77 2.05.59.06-.46.25-.77.45-.95-1.56-.18-3.2-.78-3.2-3.47 0-.77.28-1.39.72-1.88-.07-.18-.31-.89.07-1.85 0 0 .59-.19 1.94.72.56-.16 1.17-.23 1.77-.23.6 0 1.21.08 1.77.23 1.35-.91 1.94-.72 1.94-.72.39.96.14 1.67.07 1.85.45.49.72 1.11.72 1.88 0 2.69-1.64 3.29-3.2 3.46.25.22.48.65.48 1.32 0 .95-.01 1.71-.01 1.95 0 .19.13.41.49.34A7 7 0 0 0 15 8c0-3.87-3.13-7-7-7Z"/></svg>
+      GitHub repo
+    </a>
+  </div>
+  <div class="border-t border-neutral-200/80 dark:border-white/[0.06]">
+    <div class="mx-auto max-w-[1180px] px-6 py-4 text-[11px] text-neutral-400 dark:text-neutral-600">
+      © 2026 StudSpace
+    </div>
+  </div>
+</footer>
+
+<script src="js/home.js"></script>
+
+</body>
+</html>

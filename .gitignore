@@ -1,0 +1,32 @@
+# Secrets — never commit
+.env
+
+# Backend build output
+Backend/target/
+
+# Frontend build output and dependencies
+Frontend/node_modules/
+Frontend/dist/
+
+# Design reference files (not part of the app)
+claudedesign/
+
+# Internal project files — not for public repo
+CLAUDE.md
+CHANGES_AUDIT.md
+PROGRESS.md
+
+# Generated files
+CODEBASE.md
+
+# README managed separately — edit before committing
+README.md
+
+# IDE
+.idea/
+*.iml
+*.class
+
+# OS
+.DS_Store
+Thumbs.db
