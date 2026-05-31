@@ -1,7 +1,7 @@
 // dashboard.jsx — Dashboard page (API-integrated)
 
 import React from 'react';
-import API from './api.js';
+import API from './api';
 import { Icon, Card, Badge, ProgressBar, Ring, Skeleton, Button, ErrorState, useCountUp, RECENT_ICON, RECENT_TONE, attTone } from './lib.jsx';
 
 function Greeting({ user }) {

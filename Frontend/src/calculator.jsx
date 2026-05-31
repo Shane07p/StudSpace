@@ -1,7 +1,7 @@
 // calculator.jsx — CGPA / SGPA calculator
 
 import React from 'react';
-import API from './api.js';
+import API from './api';
 import { Icon, Card, Badge, Button, Tabs, useCountUp } from './lib.jsx';
 
 const DEFAULTS = {

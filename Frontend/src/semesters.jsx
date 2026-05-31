@@ -1,7 +1,7 @@
 // semesters.jsx — Semester / Course view (API-integrated)
 
 import React from 'react';
-import API from './api.js';
+import API from './api';
 import { Icon, Card, Badge, Button, Tabs, Sheet, EmptyState, ErrorState, Skeleton, RECENT_ICON, RECENT_TONE } from './lib.jsx';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';

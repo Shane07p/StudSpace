@@ -1,7 +1,7 @@
 // app.jsx — StudSpace shell (Sidebar, Topbar, App)
 
 import React from 'react';
-import API from './api.js';
+import API from './api';
 import { Icon, Button, useLoaded, NAV, ACCENTS } from './lib.jsx';
 import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakColor, TweakRadio } from './tweaks-panel.jsx';
 import Dashboard from './dashboard.jsx';

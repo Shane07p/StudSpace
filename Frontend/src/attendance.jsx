@@ -1,7 +1,7 @@
 // attendance.jsx — full attendance view (API-integrated)
 
 import React from 'react';
-import API from './api.js';
+import API from './api';
 import { Icon, Card, Badge, Button, Tabs, Ring, ErrorState, useCountUp, Skeleton, attTone } from './lib.jsx';
 
 const STATUS_DOT_AT = {

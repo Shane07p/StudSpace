@@ -1,7 +1,7 @@
 // profile.jsx — Profile page (API-integrated)
 
 import React from 'react';
-import API from './api.js';
+import API from './api';
 import { Icon, Card, Badge, Button, Tabs, Sheet, Skeleton, ErrorState, attTone } from './lib.jsx';
 
 const INDIAN_COLLEGES = [
