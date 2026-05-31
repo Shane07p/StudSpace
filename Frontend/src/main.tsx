@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './globals.css';
-import API from './api.js';
-import App from './app.jsx';
+import API from './api';
+import App from './app';
 
 // Theme init — must run before first paint to avoid flash
 const stored = localStorage.getItem('ss-theme');
@@ -23,5 +23,5 @@ if (oauthToken) {
 if (!API.isAuthenticated()) {
   window.location.href = 'signin.html';
 } else {
-  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
 }

@@ -1,8 +1,8 @@
 // semesters.jsx — Semester / Course view (API-integrated)
 
 import React from 'react';
-import API from './api.js';
-import { Icon, Card, Badge, Button, Tabs, Sheet, EmptyState, ErrorState, Skeleton, RECENT_ICON, RECENT_TONE } from './lib.jsx';
+import API from './api';
+import { Icon, Card, Badge, Button, Tabs, Sheet, EmptyState, ErrorState, Skeleton, RECENT_ICON, RECENT_TONE } from './lib';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -227,7 +227,6 @@ export function AddResourceSheet({ open, onClose, semId, courses, defaultCourseI
       if (json.success) {
         setUrl(json.data.url);
         setType('NOTES');
-        setAutoDetected(true);
       } else {
         setErr(json.message || 'Upload failed');
       }
@@ -266,7 +265,7 @@ export function AddResourceSheet({ open, onClose, semId, courses, defaultCourseI
             {RESOURCE_TYPES.map((t) => (
               <button
                 key={t}
-                onClick={() => { setType(t); setAutoDetected(false); }}
+                onClick={() => setType(t)}
                 className={`rounded-md border px-2.5 py-1 text-[12px] font-medium transition-colors ${
                   type === t
                     ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"

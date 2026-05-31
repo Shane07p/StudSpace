@@ -1,28 +1,24 @@
-// app.jsx — StudSpace shell (Sidebar, Topbar, App)
-
 import React from 'react';
-import API from './api.js';
-import { Icon, Button, useLoaded, NAV, ACCENTS } from './lib.jsx';
-import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakColor, TweakRadio } from './tweaks-panel.jsx';
-import Dashboard from './dashboard.jsx';
-import SemesterPage from './semesters.jsx';
-import AttendancePage from './attendance.jsx';
-import CalculatorPage from './calculator.jsx';
-import ProfilePage from './profile.jsx';
+import API from './api';
+import { Icon, Button, useLoaded, NAV, ACCENTS } from './lib';
+import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakColor, TweakRadio } from './tweaks-panel';
+import Dashboard from './dashboard';
+import SemesterPage from './semesters';
+import AttendancePage from './attendance';
+import CalculatorPage from './calculator';
+import ProfilePageBase from './profile';
+const ProfilePage = ProfilePageBase as React.ComponentType<{ user: UserProfileDto | null; onUserUpdate: (u: UserProfileDto) => void }>;
+import type { UserProfileDto, CourseDto } from './types';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Error Boundary
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Error Boundary ───────────────────────────────────────────────────────────
 
-class PageErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { error: null };
-  }
-  static getDerivedStateFromError(err) {
-    return { error: err };
-  }
-  componentDidCatch(err, info) {
+interface EBState { error: Error | null; }
+interface EBProps { children: React.ReactNode; }
+
+class PageErrorBoundary extends React.Component<EBProps, EBState> {
+  constructor(props: EBProps) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(err: Error) { return { error: err }; }
+  componentDidCatch(err: Error, info: React.ErrorInfo) {
     console.error("[StudSpace] Page render error:", err, info.componentStack);
   }
   render() {
@@ -32,16 +28,9 @@ class PageErrorBoundary extends React.Component {
           <div className="grid h-12 w-12 place-items-center rounded-xl text-rose-500" style={{ background: "rgba(244,63,94,0.08)" }}>
             <Icon name="AlertTriangle" size={20} />
           </div>
-          <p className="text-[14px] font-medium" style={{ color: "var(--text-primary)" }}>
-            This page crashed.
-          </p>
+          <p className="text-[14px] font-medium" style={{ color: "var(--text-primary)" }}>This page crashed.</p>
           <p className="text-[12px] text-neutral-500 max-w-[320px]">{this.state.error.message}</p>
-          <button
-            onClick={() => this.setState({ error: null })}
-            className="text-[12px] text-[var(--accent)] hover:underline"
-          >
-            Try again
-          </button>
+          <button onClick={() => this.setState({ error: null })} className="text-[12px] text-[var(--accent)] hover:underline">Try again</button>
         </div>
       );
     }
@@ -49,21 +38,17 @@ class PageErrorBoundary extends React.Component {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sidebar
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
 
-function Sidebar({ active, onNav, collapsed, onToggle, user }) {
-  const initials = user ? (user.fullName || user.username || "U")
-    .split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("") : "…";
+interface SidebarProps { active: string; onNav: (id: string) => void; collapsed: boolean; onToggle: () => void; user: UserProfileDto | null; }
+
+function Sidebar({ active, onNav, collapsed, onToggle, user }: SidebarProps) {
+  const initials = user ? (user.fullName || user.username || "U").split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("") : "…";
   const label = user ? `${user.fullName || user.username}'s workspace` : "Loading…";
   const sub = user ? [user.branch, user.college].filter(Boolean).join(" · ") : "";
 
   return (
-    <aside
-      className="hidden md:flex shrink-0 flex-col border-r transition-[width] duration-300 ease-out"
-      style={{ width: collapsed ? 60 : 232, backgroundColor: "var(--sidebar-bg)", borderRightColor: "var(--sidebar-border-color)" }}
-    >
+    <aside className="hidden md:flex shrink-0 flex-col border-r transition-[width] duration-300 ease-out" style={{ width: collapsed ? 60 : 232, backgroundColor: "var(--sidebar-bg)", borderRightColor: "var(--sidebar-border-color)" }}>
       <div className="flex h-14 items-center gap-2 px-3.5">
         <div className="grid h-7 w-7 place-items-center rounded-md bg-[var(--accent)] text-white shadow-sm">
           <Icon name="GraduationCap" size={15} strokeWidth={2.25} />
@@ -94,11 +79,7 @@ function Sidebar({ active, onNav, collapsed, onToggle, user }) {
         <ul className="flex flex-col gap-0.5">
           {NAV.map((n) => {
             const isActive = active === n.id;
-            const cls = `group flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-[12.5px] font-medium transition-colors ${
-              isActive
-                ? "bg-neutral-200/70 text-neutral-900 dark:bg-white/[0.08] dark:text-white"
-                : "text-neutral-600 hover:bg-neutral-200/40 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/[0.04] dark:hover:text-neutral-100"
-            } ${collapsed ? "justify-center" : ""}`;
+            const cls = `group flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-[12.5px] font-medium transition-colors ${isActive ? "bg-neutral-200/70 text-neutral-900 dark:bg-white/[0.08] dark:text-white" : "text-neutral-600 hover:bg-neutral-200/40 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/[0.04] dark:hover:text-neutral-100"} ${collapsed ? "justify-center" : ""}`;
             const inner = (
               <>
                 <Icon name={n.icon} size={15} strokeWidth={isActive ? 2 : 1.75} />
@@ -109,44 +90,26 @@ function Sidebar({ active, onNav, collapsed, onToggle, user }) {
             return (
               <li key={n.id}>
                 {n.external ? (
-                  <a href={n.external} target="_blank" rel="noopener noreferrer" className={cls} title={collapsed ? n.label : undefined}>
-                    {inner}
-                  </a>
+                  <a href={n.external} target="_blank" rel="noopener noreferrer" className={cls} title={collapsed ? n.label : undefined}>{inner}</a>
                 ) : (
-                  <button onClick={() => onNav(n.id)} className={cls} title={collapsed ? n.label : undefined}>
-                    {inner}
-                  </button>
+                  <button onClick={() => onNav(n.id)} className={cls} title={collapsed ? n.label : undefined}>{inner}</button>
                 )}
               </li>
             );
           })}
         </ul>
-
       </nav>
 
       <div className="border-t border-neutral-200/70 dark:border-white/[0.06] p-2 flex flex-col gap-0.5">
-        <a
-          href="index.html"
-          className={`flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-[12px] text-neutral-500 hover:bg-neutral-200/40 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/[0.04] dark:hover:text-neutral-100 transition-colors ${collapsed ? "justify-center" : ""}`}
-          title={collapsed ? "Visit homepage" : undefined}
-        >
+        <a href="index.html" className={`flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-[12px] text-neutral-500 hover:bg-neutral-200/40 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/[0.04] dark:hover:text-neutral-100 transition-colors ${collapsed ? "justify-center" : ""}`} title={collapsed ? "Visit homepage" : undefined}>
           <Icon name="Home" size={14} />
-          {!collapsed && <span className="flex-1">Visit homepage</span>}
-          {!collapsed && <Icon name="ArrowUpRight" size={11} className="text-neutral-400" />}
+          {!collapsed && <><span className="flex-1">Visit homepage</span><Icon name="ArrowUpRight" size={11} className="text-neutral-400" /></>}
         </a>
-        <button
-          onClick={() => { API.clearToken(); window.location.href = "signin.html"; }}
-          className={`flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-[12px] text-rose-600 dark:text-rose-400 hover:bg-rose-50/70 dark:hover:bg-rose-500/[0.08] transition-colors ${collapsed ? "justify-center" : ""}`}
-          title={collapsed ? "Sign out" : undefined}
-        >
+        <button onClick={() => { API.clearToken(); window.location.href = "signin.html"; }} className={`flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-[12px] text-rose-600 dark:text-rose-400 hover:bg-rose-50/70 dark:hover:bg-rose-500/[0.08] transition-colors ${collapsed ? "justify-center" : ""}`} title={collapsed ? "Sign out" : undefined}>
           <Icon name="LogOut" size={14} />
           {!collapsed && <span>Sign out</span>}
         </button>
-        <button
-          onClick={onToggle}
-          className={`mt-0.5 flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-[12px] text-neutral-500 hover:bg-neutral-200/40 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/[0.04] dark:hover:text-neutral-100 transition-colors ${collapsed ? "justify-center" : ""}`}
-          title={collapsed ? "Expand" : "Collapse"}
-        >
+        <button onClick={onToggle} className={`mt-0.5 flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-[12px] text-neutral-500 hover:bg-neutral-200/40 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/[0.04] dark:hover:text-neutral-100 transition-colors ${collapsed ? "justify-center" : ""}`} title={collapsed ? "Expand" : "Collapse"}>
           <Icon name={collapsed ? "PanelLeftOpen" : "PanelLeftClose"} size={14} />
           {!collapsed && <span>Collapse</span>}
         </button>
@@ -155,11 +118,9 @@ function Sidebar({ active, onNav, collapsed, onToggle, user }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Topbar
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Topbar ───────────────────────────────────────────────────────────────────
 
-const CRUMB = {
+const CRUMB: Record<string, { icon: string; label: string }> = {
   dashboard:  { icon: "LayoutDashboard", label: "Dashboard" },
   semesters:  { icon: "BookOpen",        label: "Semesters" },
   attendance: { icon: "CalendarCheck2",  label: "Attendance" },
@@ -167,17 +128,18 @@ const CRUMB = {
   profile:    { icon: "User",            label: "Profile" },
 };
 
-function Topbar({ active, dark, onDark, onNav, user }) {
+interface TopbarProps { active: string; dark: boolean; onDark: (v: boolean) => void; onNav: (id: string) => void; user: UserProfileDto | null; }
+
+function Topbar({ active, dark, onDark, onNav, user }: TopbarProps) {
   const crumb = CRUMB[active] || CRUMB.dashboard;
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const menuRef = React.useRef(null);
-  const initials = user ? (user.fullName || user.username || "U")
-    .split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("") : "…";
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  const initials = user ? (user.fullName || user.username || "U").split(" ").slice(0, 2).map(w => w[0].toUpperCase()).join("") : "…";
 
   React.useEffect(() => {
     if (!menuOpen) return;
-    const onClick = (e) => { if (!menuRef.current?.contains(e.target)) setMenuOpen(false); };
-    const onKey = (e) => { if (e.key === "Escape") setMenuOpen(false); };
+    const onClick = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenuOpen(false); };
     document.addEventListener("mousedown", onClick);
     document.addEventListener("keydown", onKey);
     return () => { document.removeEventListener("mousedown", onClick); document.removeEventListener("keydown", onKey); };
@@ -188,23 +150,16 @@ function Topbar({ active, dark, onDark, onNav, user }) {
       <div className="flex items-center gap-2 text-[12.5px] text-neutral-500 dark:text-neutral-400">
         <Icon name={crumb.icon} size={13} />
         <span>{crumb.label}</span>
-        {user && active === "profile" && <>
-          <span className="text-neutral-300 dark:text-neutral-700">/</span>
-          <span className="text-neutral-700 dark:text-neutral-200 font-medium">@{user.username}</span>
-        </>}
+        {user && active === "profile" && <><span className="text-neutral-300 dark:text-neutral-700">/</span><span className="text-neutral-700 dark:text-neutral-200 font-medium">@{user.username}</span></>}
       </div>
       <div className="flex items-center gap-1.5">
         <IconBtn name={dark ? "Sun" : "Moon"} onClick={() => onDark(!dark)} />
-
         <div className="relative ml-1" ref={menuRef}>
-          <button
-            onClick={() => setMenuOpen(v => !v)}
-            className={`grid h-7 w-7 place-items-center rounded-full overflow-hidden text-[10.5px] font-semibold text-white shadow-sm ring-1 ring-white/20 transition-shadow ${menuOpen ? "ring-2 ring-[var(--accent)]/40" : ""} ${user?.profilePhoto ? "" : "bg-gradient-to-br from-indigo-500 to-violet-600"}`}
-          >
+          <button onClick={() => setMenuOpen(v => !v)} className={`grid h-7 w-7 place-items-center rounded-full overflow-hidden text-[10.5px] font-semibold text-white shadow-sm ring-1 ring-white/20 transition-shadow ${menuOpen ? "ring-2 ring-[var(--accent)]/40" : ""} ${user?.profilePhoto ? "" : "bg-gradient-to-br from-indigo-500 to-violet-600"}`}>
             {user?.profilePhoto ? <img src={user.profilePhoto} alt="" className="h-full w-full object-cover" /> : initials}
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-60 rounded-lg border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-950 shadow-2xl shadow-neutral-900/[0.12] dark:shadow-black/50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-60 rounded-lg border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-950 shadow-2xl overflow-hidden">
               <div className="px-3.5 py-3 border-b border-neutral-200/70 dark:border-white/[0.06]">
                 <div className="flex items-center gap-2.5">
                   <div className={`grid h-9 w-9 place-items-center rounded-full overflow-hidden text-[12px] font-semibold text-white shadow-sm ${user?.profilePhoto ? "" : "bg-gradient-to-br from-indigo-500 to-violet-600"}`}>
@@ -216,15 +171,9 @@ function Topbar({ active, dark, onDark, onNav, user }) {
                   </div>
                 </div>
               </div>
-              <div className="p-1">
-                <MenuItem icon="User" label="View profile" onClick={() => { setMenuOpen(false); onNav("profile"); }} />
-              </div>
-              <div className="border-t border-neutral-200/70 dark:border-white/[0.06] p-1">
-                <MenuItem icon="Home" label="Visit homepage" external href="index.html" />
-              </div>
-              <div className="border-t border-neutral-200/70 dark:border-white/[0.06] p-1">
-                <MenuItem icon="LogOut" label="Sign out" onClick={() => { API.clearToken(); window.location.href = "signin.html"; }} danger />
-              </div>
+              <div className="p-1"><MenuItem icon="User" label="View profile" onClick={() => { setMenuOpen(false); onNav("profile"); }} /></div>
+              <div className="border-t border-neutral-200/70 dark:border-white/[0.06] p-1"><MenuItem icon="Home" label="Visit homepage" external href="index.html" /></div>
+              <div className="border-t border-neutral-200/70 dark:border-white/[0.06] p-1"><MenuItem icon="LogOut" label="Sign out" onClick={() => { API.clearToken(); window.location.href = "signin.html"; }} danger /></div>
             </div>
           )}
         </div>
@@ -233,12 +182,10 @@ function Topbar({ active, dark, onDark, onNav, user }) {
   );
 }
 
-function MenuItem({ icon, label, shortcut, onClick, href, external, danger }) {
-  const cls = `group flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[12.5px] transition-colors ${
-    danger
-      ? "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/[0.08]"
-      : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/[0.05] hover:text-neutral-900 dark:hover:text-neutral-100"
-  }`;
+interface MenuItemProps { icon: string; label: string; shortcut?: string; onClick?: () => void; href?: string; external?: boolean; danger?: boolean; }
+
+function MenuItem({ icon, label, shortcut, onClick, href, external, danger }: MenuItemProps) {
+  const cls = `group flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[12.5px] transition-colors ${danger ? "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/[0.08]" : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/[0.05] hover:text-neutral-900 dark:hover:text-neutral-100"}`;
   const inner = (
     <>
       <Icon name={icon} size={13} className={danger ? "text-rose-500" : "text-neutral-500 group-hover:text-neutral-800 dark:group-hover:text-neutral-200"} />
@@ -251,22 +198,19 @@ function MenuItem({ icon, label, shortcut, onClick, href, external, danger }) {
   return <button onClick={onClick} className={cls}>{inner}</button>;
 }
 
-function IconBtn({ name, onClick }) {
+function IconBtn({ name, onClick }: { name: string; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className="grid h-8 w-8 place-items-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/[0.06] dark:hover:text-neutral-100 transition-colors"
-    >
+    <button onClick={onClick} className="grid h-8 w-8 place-items-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/[0.06] dark:hover:text-neutral-100 transition-colors">
       <Icon name={name} size={14} />
     </button>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// App
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── App ─────────────────────────────────────────────────────────────────────
 
-const TWEAK_DEFAULTS = {
+interface TweakValues { accent: string; dark: boolean; sidebarCollapsed: boolean; }
+
+const TWEAK_DEFAULTS: TweakValues = {
   accent: localStorage.getItem("ss-accent-key") || "indigo",
   dark: localStorage.getItem("ss-theme") === "dark",
   sidebarCollapsed: localStorage.getItem("ss-sidebar") === "1",
@@ -275,24 +219,18 @@ const TWEAK_DEFAULTS = {
 const VALID_TABS = ["dashboard", "semesters", "attendance", "calculator", "profile"];
 
 function App() {
-  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [t, setTweak] = useTweaks<TweakValues>(TWEAK_DEFAULTS);
   const [active, setActive] = React.useState(() => {
     const hash = window.location.hash.slice(1);
     return VALID_TABS.includes(hash) ? hash : "dashboard";
   });
   const [collapsed, setCollapsed] = React.useState(TWEAK_DEFAULTS.sidebarCollapsed);
-  const [user, setUser] = React.useState(API.getCachedUser());
-  const [courses, setCourses] = React.useState([]);
+  const [user, setUser] = React.useState<UserProfileDto | null>(API.getCachedUser());
+  const [courses, setCourses] = React.useState<CourseDto[]>([]);
   const loaded = useLoaded(750);
 
-  React.useLayoutEffect(() => {
-    document.documentElement.classList.toggle("dark", t.dark);
-  }, [t.dark]);
-
-  React.useEffect(() => {
-    localStorage.setItem("ss-theme", t.dark ? "dark" : "light");
-  }, [t.dark]);
-
+  React.useLayoutEffect(() => { document.documentElement.classList.toggle("dark", t.dark); }, [t.dark]);
+  React.useEffect(() => { localStorage.setItem("ss-theme", t.dark ? "dark" : "light"); }, [t.dark]);
   React.useEffect(() => {
     document.documentElement.style.setProperty("--accent", ACCENTS[t.accent] || ACCENTS.indigo);
     localStorage.setItem("ss-accent", ACCENTS[t.accent] || ACCENTS.indigo);
@@ -300,39 +238,26 @@ function App() {
   }, [t.accent]);
 
   React.useEffect(() => {
-    API.user.me().then(u => {
-      setUser(u);
-      API.cacheUser(u);
-    }).catch(() => {
-      API.clearToken();
-      window.location.href = "signin.html";
-    });
+    API.user.me().then(u => { setUser(u); API.cacheUser(u); }).catch(() => { API.clearToken(); window.location.href = "signin.html"; });
   }, []);
 
   React.useEffect(() => {
     API.dashboard.get().then(d => {
-      if (d && d.currentSemester) setCourses(d.currentSemester.courses || []);
+      if (d?.currentSemester) setCourses(d.currentSemester.courses || []);
     }).catch(() => {});
   }, []);
 
   React.useEffect(() => {
-    const onHash = () => {
-      const tab = window.location.hash.slice(1);
-      if (VALID_TABS.includes(tab)) setActive(tab);
-    };
+    const onHash = () => { const tab = window.location.hash.slice(1); if (VALID_TABS.includes(tab)) setActive(tab); };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  const goto = (id) => {
-    setActive(id);
-    window.location.hash = id;
-  };
+  const goto = (id: string) => { setActive(id); window.location.hash = id; };
 
   return (
     <div className="flex h-screen w-screen antialiased" style={{ fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif", backgroundColor: "var(--bg-base)", color: "var(--text-primary)" }}>
       <Sidebar active={active} onNav={goto} collapsed={collapsed} onToggle={() => setCollapsed(v => { const next = !v; localStorage.setItem("ss-sidebar", next ? "1" : ""); return next; })} user={user} />
-
       <div className="flex min-w-0 flex-1 flex-col" style={{ backgroundColor: "var(--content-bg)" }}>
         <Topbar active={active} dark={t.dark} onDark={(v) => setTweak("dark", v)} onNav={goto} user={user} />
         <main className="flex-1 overflow-y-auto">
@@ -345,28 +270,14 @@ function App() {
           </PageErrorBoundary>
         </main>
       </div>
-
       <TweaksPanel title="Tweaks">
         <TweakSection label="Appearance" />
         <TweakToggle label="Dark mode" value={t.dark} onChange={(v) => setTweak("dark", v)} />
-        <TweakColor
-          label="Accent"
-          value={ACCENTS[t.accent]}
-          options={Object.values(ACCENTS)}
-          onChange={(hex) => {
-            const key = Object.keys(ACCENTS).find(k => ACCENTS[k] === hex) || "indigo";
-            setTweak("accent", key);
-          }}
-        />
+        <TweakColor label="Accent" value={ACCENTS[t.accent]} options={Object.values(ACCENTS)} onChange={(hex) => { const key = Object.keys(ACCENTS).find(k => ACCENTS[k] === hex) || "indigo"; setTweak("accent", key); }} />
         <TweakSection label="Layout" />
         <TweakToggle label="Collapse sidebar" value={collapsed} onChange={(v) => { setCollapsed(v); setTweak("sidebarCollapsed", v); }} />
         <TweakSection label="Navigation" />
-        <TweakRadio
-          label="Jump to"
-          value={active}
-          options={["dashboard", "semesters", "attendance", "calculator", "profile"]}
-          onChange={(v) => setActive(v)}
-        />
+        <TweakRadio label="Jump to" value={active} options={["dashboard", "semesters", "attendance", "calculator", "profile"]} onChange={(v) => setActive(v)} />
       </TweaksPanel>
     </div>
   );
