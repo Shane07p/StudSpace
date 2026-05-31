@@ -1,14 +1,9 @@
+// lib.jsx — shared primitives and hooks for StudSpace
+
 import React, { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } from 'react';
 import * as LucideIcons from 'lucide-react';
 
-export interface NavItem {
-  id: string;
-  label: string;
-  icon: string;
-  external?: string;
-}
-
-export const NAV: NavItem[] = [
+export const NAV = [
   { id: "dashboard",  label: "Dashboard",  icon: "LayoutDashboard" },
   { id: "semesters",  label: "Semesters",  icon: "BookOpen" },
   { id: "attendance", label: "Attendance", icon: "CalendarCheck2" },
@@ -16,7 +11,7 @@ export const NAV: NavItem[] = [
   { id: "profile",    label: "Profile",    icon: "User" },
 ];
 
-export const ACCENTS: Record<string, string> = {
+export const ACCENTS = {
   indigo:  "#6366f1",
   violet:  "#8b5cf6",
   emerald: "#10b981",
@@ -24,31 +19,31 @@ export const ACCENTS: Record<string, string> = {
   amber:   "#f59e0b",
 };
 
-export function attTone(pct: number, target: number): 'green' | 'yellow' | 'red' {
+// "green" = comfortably above, "yellow" = at target but within 10pp, "red" = below target
+export function attTone(pct, target) {
   if (pct < target) return "red";
   if (pct < Math.min(100, target + 10)) return "yellow";
   return "green";
 }
 
-export const RECENT_ICON: Record<string, string> = {
+export const RECENT_ICON = {
   PYQ: "FileText", Pyq: "FileText", Playlist: "PlaySquare", Notes: "NotebookPen", Link: "Link", Other: "Paperclip",
 };
-export const RECENT_TONE: Record<string, string> = {
+export const RECENT_TONE = {
   PYQ: "pyq", Pyq: "pyq", Playlist: "playlist", Notes: "notes", Link: "link", Other: "other",
 };
 
-// ─── Hooks ────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Hooks
+// ─────────────────────────────────────────────────────────────────────────────
 
-interface CountUpOptions { duration?: number; delay?: number; decimals?: number; }
-
-export function useCountUp(target: number, { duration = 900, delay = 0, decimals = 0 }: CountUpOptions = {}): number {
+export function useCountUp(target, { duration = 900, delay = 0, decimals = 0 } = {}) {
   const [val, setVal] = useState(0);
   useEffect(() => {
-    let raf: number;
-    let start: number | undefined;
+    let raf, start;
     const t0 = performance.now() + delay;
-    const ease = (x: number) => 1 - Math.pow(1 - x, 3);
-    const tick = (now: number) => {
+    const ease = (x) => 1 - Math.pow(1 - x, 3);
+    const tick = (now) => {
       if (now < t0) { raf = requestAnimationFrame(tick); return; }
       if (start == null) start = now;
       const p = Math.min(1, (now - start) / duration);
@@ -61,39 +56,35 @@ export function useCountUp(target: number, { duration = 900, delay = 0, decimals
   return decimals === 0 ? Math.round(val) : Number(val.toFixed(decimals));
 }
 
-export function useLoaded(delay = 700): boolean {
+export function useLoaded(delay = 700) {
   const [ready, setReady] = useState(false);
   useEffect(() => { const t = setTimeout(() => setReady(true), delay); return () => clearTimeout(t); }, [delay]);
   return ready;
 }
 
-// ─── Icon ────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Icon (lucide-react)
+// ─────────────────────────────────────────────────────────────────────────────
 
-interface IconProps {
-  name: string;
-  size?: number;
-  className?: string;
-  strokeWidth?: number;
-}
-
-export function Icon({ name, size = 16, className = '', strokeWidth = 1.75 }: IconProps) {
-  const Comp = (LucideIcons as unknown as Record<string, React.ElementType>)[name];
+export function Icon({ name, size = 16, className = '', strokeWidth = 1.75 }) {
+  const Comp = LucideIcons[name];
   if (!Comp) return <span style={{ width: size, height: size, display: 'inline-flex', flexShrink: 0 }} />;
   return <Comp size={size} strokeWidth={strokeWidth} className={className} style={{ display: 'inline-flex', flexShrink: 0 }} />;
 }
 
-// ─── Primitives ───────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Primitives
+// ─────────────────────────────────────────────────────────────────────────────
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  className?: string;
-  children?: React.ReactNode;
-}
-
-export function Card({ className = "", children, ...rest }: CardProps) {
+export function Card({ className = "", children, ...rest }) {
   return (
     <div
       className={className}
-      style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)", borderRadius: "12px" }}
+      style={{
+        backgroundColor: "var(--card-bg)",
+        border: "1px solid var(--card-border)",
+        borderRadius: "12px",
+      }}
       {...rest}
     >
       {children}
@@ -101,14 +92,8 @@ export function Card({ className = "", children, ...rest }: CardProps) {
   );
 }
 
-interface BadgeProps {
-  children: React.ReactNode;
-  tone?: string;
-  className?: string;
-}
-
-export function Badge({ children, tone = "neutral", className = "" }: BadgeProps) {
-  const tones: Record<string, string> = {
+export function Badge({ children, tone = "neutral", className = "" }) {
+  const tones = {
     neutral:  "bg-neutral-100 text-neutral-700 dark:bg-white/[0.06] dark:text-neutral-300",
     pyq:      "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
     playlist: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
@@ -121,98 +106,86 @@ export function Badge({ children, tone = "neutral", className = "" }: BadgeProps
     accent:   "bg-[var(--accent)]/10 text-[var(--accent)]",
   };
   return (
-    <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10.5px] font-medium tracking-wide ${tones[tone] ?? tones.neutral} ${className}`}>
+    <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10.5px] font-medium tracking-wide ${tones[tone] || tones.neutral} ${className}`}>
       {children}
     </span>
   );
 }
 
-interface ProgressBarProps { value: number; className?: string; }
-
-export function ProgressBar({ value, className = "" }: ProgressBarProps) {
+export function ProgressBar({ value, className = "" }) {
   return (
     <div className={`h-1 w-full overflow-hidden rounded-full bg-neutral-200/70 dark:bg-white/[0.06] ${className}`}>
-      <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-1000 ease-out" style={{ width: `${value}%` }} />
+      <div
+        className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-1000 ease-out"
+        style={{ width: `${value}%` }}
+      />
     </div>
   );
 }
 
-interface RingProps { value: number; size?: number; stroke?: number; color?: string; }
-
-export function Ring({ value, size = 44, stroke = 3.5, color = "var(--accent)" }: RingProps) {
+export function Ring({ value, size = 44, stroke = 3.5, color = "var(--accent)" }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = c - (value / 100) * c;
   return (
     <svg width={size} height={size} className="-rotate-90">
-      <circle cx={size/2} cy={size/2} r={r} stroke="currentColor" strokeWidth={stroke} fill="none" className="text-neutral-200 dark:text-white/[0.08]" />
-      <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={offset} style={{ transition: "stroke-dashoffset 1000ms cubic-bezier(.22,1,.36,1)" }} />
+      <circle cx={size/2} cy={size/2} r={r} stroke="currentColor" strokeWidth={stroke} fill="none"
+              className="text-neutral-200 dark:text-white/[0.08]" />
+      <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none"
+              strokeLinecap="round" strokeDasharray={c} strokeDashoffset={offset}
+              style={{ transition: "stroke-dashoffset 1000ms cubic-bezier(.22,1,.36,1)" }} />
     </svg>
   );
 }
 
-interface SkeletonProps { className?: string; }
-
-export function Skeleton({ className = "" }: SkeletonProps) {
+export function Skeleton({ className = "" }) {
   return <div className={`animate-pulse rounded-md bg-neutral-200/70 dark:bg-white/[0.06] ${className}`} />;
 }
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'outline' | 'ghost' | 'accent';
-  size?: 'sm' | 'md' | 'icon';
-  className?: string;
-  children?: React.ReactNode;
-}
-
-export function Button({ variant = "default", size = "sm", className = "", children, ...rest }: ButtonProps) {
-  const sizes: Record<string, string> = { sm: "h-8 px-2.5 text-[12px]", md: "h-9 px-3 text-[13px]", icon: "h-8 w-8" };
-  const variants: Record<string, string> = {
+export function Button({ variant = "default", size = "sm", className = "", children, ...rest }) {
+  const sizes = {
+    sm: "h-8 px-2.5 text-[12px]",
+    md: "h-9 px-3 text-[13px]",
+    icon: "h-8 w-8",
+  };
+  const variants = {
     default: "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 shadow-sm",
     outline: "border border-neutral-200/80 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-neutral-200 dark:hover:bg-white/[0.06]",
     ghost:   "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/[0.06] dark:hover:text-neutral-100",
     accent:  "bg-[var(--accent)] text-white hover:opacity-90 shadow-sm",
   };
   return (
-    <button className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md font-medium transition-colors ${sizes[size]} ${variants[variant]} ${className}`} {...rest}>
+    <button
+      className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md font-medium transition-colors ${sizes[size]} ${variants[variant]} ${className}`}
+      {...rest}
+    >
       {children}
     </button>
   );
 }
 
-export interface TabItem {
-  id?: string;
-  label?: string;
-  icon?: string;
-  badge?: number | string;
-}
-
-interface TabsProps {
-  items: (TabItem | string)[];
-  value: string;
-  onChange: (id: string) => void;
-  className?: string;
-}
-
-export function Tabs({ items, value, onChange, className = "" }: TabsProps) {
+export function Tabs({ items, value, onChange, className = "" }) {
   return (
     <div className={`inline-flex items-center gap-0.5 rounded-md border border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50 dark:bg-white/[0.03] p-0.5 ${className}`}>
       {items.map((it) => {
-        const id = typeof it === 'string' ? it : (it.id ?? it.label ?? '');
-        const label = typeof it === 'string' ? it : (it.label ?? it.id ?? '');
-        const icon = typeof it === 'string' ? undefined : it.icon;
-        const badge = typeof it === 'string' ? undefined : it.badge;
+        const id = it.id ?? it;
+        const label = it.label ?? it;
         const isActive = value === id;
         return (
           <button
             key={id}
             onClick={() => onChange(id)}
-            className={`relative inline-flex items-center gap-1.5 rounded-[5px] px-2.5 py-1 text-[12px] font-medium transition-colors ${isActive ? "bg-white text-neutral-900 shadow-sm dark:bg-white/[0.08] dark:text-white" : "text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100"}`}
+            className={`relative inline-flex items-center gap-1.5 rounded-[5px] px-2.5 py-1 text-[12px] font-medium transition-colors ${
+              isActive
+                ? "bg-white text-neutral-900 shadow-sm dark:bg-white/[0.08] dark:text-white"
+                : "text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100"
+            }`}
           >
-            {icon && <Icon name={icon} size={12} />}
+            {it.icon && <Icon name={it.icon} size={12} />}
             {label}
-            {badge != null && (
+            {it.badge != null && (
               <span className={`ml-0.5 rounded px-1 text-[10px] tabular-nums ${isActive ? "bg-neutral-100 text-neutral-600 dark:bg-white/[0.08] dark:text-neutral-300" : "bg-neutral-200/70 text-neutral-500 dark:bg-white/[0.06] dark:text-neutral-400"}`}>
-                {badge}
+                {it.badge}
               </span>
             )}
           </button>
@@ -222,18 +195,10 @@ export function Tabs({ items, value, onChange, className = "" }: TabsProps) {
   );
 }
 
-interface SheetProps {
-  open: boolean;
-  onClose?: () => void;
-  title: string;
-  children?: React.ReactNode;
-  width?: number;
-}
-
-export function Sheet({ open, onClose, title, children, width = 420 }: SheetProps) {
+export function Sheet({ open, onClose, title, children, width = 420 }) {
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose?.(); };
+    const onKey = (e) => { if (e.key === "Escape") onClose?.(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
@@ -242,8 +207,14 @@ export function Sheet({ open, onClose, title, children, width = 420 }: SheetProp
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center px-4">
-      <div onClick={onClose} className="absolute inset-0 bg-neutral-900/60 dark:bg-black/70 backdrop-blur-[2px]" />
-      <div style={{ width: `min(${width}px, calc(100vw - 32px))`, maxHeight: "90vh" }} className="relative z-10 flex flex-col bg-white dark:bg-neutral-950 rounded-xl border border-neutral-200/80 dark:border-white/[0.06] shadow-2xl">
+      <div
+        onClick={onClose}
+        className="absolute inset-0 bg-neutral-900/60 dark:bg-black/70 backdrop-blur-[2px]"
+      />
+      <div
+        style={{ width: "min(" + width + "px, calc(100vw - 32px))", maxHeight: "90vh" }}
+        className="relative z-10 flex flex-col bg-white dark:bg-neutral-950 rounded-xl border border-neutral-200/80 dark:border-white/[0.06] shadow-2xl"
+      >
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-200/80 dark:border-white/[0.06] px-5">
           <h2 className="text-[14px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">{title}</h2>
           <button onClick={onClose} className="grid h-7 w-7 place-items-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-white/[0.06]">
@@ -258,9 +229,7 @@ export function Sheet({ open, onClose, title, children, width = 420 }: SheetProp
   );
 }
 
-interface ErrorStateProps { onRetry?: () => void; title?: string; body?: string; }
-
-export function ErrorState({ onRetry, title = "Something went wrong", body = "Check your connection and try again." }: ErrorStateProps) {
+export function ErrorState({ onRetry, title = "Something went wrong", body = "Check your connection and try again." }) {
   return (
     <div className="flex flex-col items-center px-6 py-16 text-center">
       <div className="grid h-12 w-12 place-items-center rounded-xl bg-rose-50 dark:bg-rose-500/[0.08] text-rose-500 dark:text-rose-400">
@@ -268,14 +237,16 @@ export function ErrorState({ onRetry, title = "Something went wrong", body = "Ch
       </div>
       <h3 className="mt-4 text-[14px] font-semibold tracking-tight text-neutral-800 dark:text-neutral-100">{title}</h3>
       <p className="mt-1 max-w-[280px] text-[12.5px] text-neutral-500 dark:text-neutral-400">{body}</p>
-      {onRetry && <div className="mt-4"><Button variant="outline" onClick={onRetry}><Icon name="RotateCcw" size={12} /> Retry</Button></div>}
+      {onRetry && (
+        <div className="mt-4">
+          <Button variant="outline" onClick={onRetry}><Icon name="RotateCcw" size={12} /> Retry</Button>
+        </div>
+      )}
     </div>
   );
 }
 
-interface EmptyStateProps { icon?: string; title: string; body?: string; action?: React.ReactNode; }
-
-export function EmptyState({ icon = "stack", title, body, action }: EmptyStateProps) {
+export function EmptyState({ icon = "stack", title, body, action }) {
   return (
     <div className="flex flex-col items-center px-6 py-16 text-center">
       <EmptySvg kind={icon} />
@@ -286,7 +257,7 @@ export function EmptyState({ icon = "stack", title, body, action }: EmptyStatePr
   );
 }
 
-function EmptySvg({ kind }: { kind: string }) {
+function EmptySvg({ kind }) {
   const stroke = "currentColor";
   const sw = 1.25;
   if (kind === "stack") {

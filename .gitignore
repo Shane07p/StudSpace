@@ -19,6 +19,9 @@ PROGRESS.md
 # Generated files
 CODEBASE.md
 
+# JS comparison folder (not part of the repo)
+FrontendJS/
+
 # README managed separately — edit before committing
 README.md
 
