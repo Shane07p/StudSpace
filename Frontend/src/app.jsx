@@ -2,7 +2,7 @@
 
 import React from 'react';
 import API from './api';
-import { Icon, Button, useLoaded, NAV, ACCENTS } from './lib.jsx';
+import { Icon, Button, useLoaded, NAV, ACCENTS } from './lib';
 import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakColor, TweakRadio } from './tweaks-panel.jsx';
 import Dashboard from './dashboard.jsx';
 import SemesterPage from './semesters.jsx';

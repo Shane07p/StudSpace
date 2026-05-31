@@ -2,7 +2,7 @@
 
 import React from 'react';
 import API from './api';
-import { Icon, Card, Badge, Button, Tabs, Ring, ErrorState, useCountUp, Skeleton, attTone } from './lib.jsx';
+import { Icon, Card, Badge, Button, Tabs, Ring, ErrorState, useCountUp, Skeleton, attTone, ConfirmDialog } from './lib';
 
 const STATUS_DOT_AT = {
   PRESENT:   "bg-emerald-500",
@@ -279,6 +279,7 @@ function AttendancePage() {
   );
   const [editingThreshold, setEditingThreshold] = React.useState(false);
   const [viewMode, setViewMode] = React.useState("list");
+  const [confirmDeleteRec, setConfirmDeleteRec] = React.useState(null);
 
   React.useEffect(() => {
     localStorage.setItem('ss-att-threshold', threshold);
@@ -534,18 +535,27 @@ function AttendancePage() {
               </div>
               <div className="flex flex-col gap-1">
                 {g.items.map((rec) => (
-                  <ClassRow key={rec.id} rec={rec} onChange={(s) => setStatus(rec, s)} onDelete={() => {
-                    API.attendance.delete(rec.id).then(() => {
-                      setRecords(prev => prev.filter(r => r.id !== rec.id));
-                      API.attendance.get(selectedId).then(data => setSummary(data.summary)).catch(() => {});
-                    }).catch(e => alert(e.message || "Failed to delete"));
-                  }} />
+                  <ClassRow key={rec.id} rec={rec} onChange={(s) => setStatus(rec, s)} onDelete={() => setConfirmDeleteRec(rec)} />
                 ))}
               </div>
             </div>
           ))
         )}
       </section>
+    <ConfirmDialog
+      open={!!confirmDeleteRec}
+      title="Delete this attendance record?"
+      message="This entry will be permanently removed."
+      onConfirm={() => {
+        const rec = confirmDeleteRec;
+        setConfirmDeleteRec(null);
+        API.attendance.delete(rec.id).then(() => {
+          setRecords(prev => prev.filter(r => r.id !== rec.id));
+          API.attendance.get(selectedId).then(data => setSummary(data.summary)).catch(() => {});
+        }).catch(e => alert(e.message || "Failed to delete"));
+      }}
+      onCancel={() => setConfirmDeleteRec(null)}
+    />
     </div>
   );
 }

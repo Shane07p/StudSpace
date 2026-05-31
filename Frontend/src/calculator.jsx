@@ -2,7 +2,7 @@
 
 import React from 'react';
 import API from './api';
-import { Icon, Card, Badge, Button, Tabs, useCountUp } from './lib.jsx';
+import { Icon, Card, Badge, Button, Tabs, useCountUp } from './lib';
 
 const DEFAULTS = {
   currentCGPA: 8.5,

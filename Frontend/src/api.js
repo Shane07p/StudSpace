@@ -1,5 +1,3 @@
-// api.js — StudSpace centralized API client (ES module)
-
 const BASE = '/api';
 const TOKEN_KEY = 'ss-token';
 const USER_KEY = 'ss-user';
@@ -10,7 +8,7 @@ function clearToken() { localStorage.removeItem(TOKEN_KEY); localStorage.removeI
 function isAuthenticated() { return !!getToken(); }
 
 function getCachedUser() {
-  try { return JSON.parse(localStorage.getItem(USER_KEY)); } catch { return null; }
+  try { return JSON.parse(localStorage.getItem(USER_KEY) ?? 'null'); } catch { return null; }
 }
 function cacheUser(u) { localStorage.setItem(USER_KEY, JSON.stringify(u)); }
 
@@ -28,29 +26,19 @@ async function request(method, path, body) {
   const json = await res.json();
 
   if (res.status === 401) {
-    if (token) {
-      clearToken();
-      window.location.href = 'signin.html';
-    }
+    if (token) { clearToken(); window.location.href = 'signin.html'; }
     throw new Error(json.message || 'Invalid username or password');
   }
 
-  if (!json.success) {
-    throw new Error(json.message || 'Request failed');
-  }
+  if (!json.success) throw new Error(json.message || 'Request failed');
 
   return json.data;
 }
 
-function redirectToDashboard() {
-  window.location.href = 'dashboard.html';
-}
+function redirectToDashboard() { window.location.href = 'dashboard.html'; }
 
 function requireAuth() {
-  if (!isAuthenticated()) {
-    window.location.href = 'signin.html';
-    return false;
-  }
+  if (!isAuthenticated()) { window.location.href = 'signin.html'; return false; }
   return true;
 }
 
@@ -65,81 +53,78 @@ const API = {
   redirectToDashboard,
 
   auth: {
-    login: async function (username, password) {
+    login: async (username, password) => {
       const data = await request('POST', '/auth/login', { username, password });
-      setToken(data.token);
-      cacheUser(data.user);
-      return data;
+      setToken(data.token); cacheUser(data.user); return data;
     },
-    register: async function (fullName, username, email, password) {
+    register: async (fullName, username, email, password) => {
       const data = await request('POST', '/auth/register', { fullName, username, email, password });
-      setToken(data.token);
-      cacheUser(data.user);
-      return data;
+      setToken(data.token); cacheUser(data.user); return data;
     },
   },
 
   user: {
-    me: function () { return request('GET', '/user/me'); },
-    update: function (data) { return request('PUT', '/user/me', data); },
-    updateHandles: function (handles) { return request('PUT', '/user/me/handles', { handles }); },
-    updatePhoto: function (photo) { return request('POST', '/user/me/photo', { photo }); },
-    updateCover: function (photo) { return request('POST', '/user/me/cover', { photo }); },
-    changePassword: function (currentPassword, newPassword) { return request('PUT', '/user/me/password', { currentPassword, newPassword }); },
-    deleteAccount: function () { return request('DELETE', '/user/me'); },
+    me: () => request('GET', '/user/me'),
+    update: (data) => request('PUT', '/user/me', data),
+    updateHandles: (handles) => request('PUT', '/user/me/handles', { handles }),
+    updatePhoto: (photo) => request('POST', '/user/me/photo', { photo }),
+    updateCover: (photo) => request('POST', '/user/me/cover', { photo }),
+    changePassword: (currentPassword, newPassword) =>
+      request('PUT', '/user/me/password', { currentPassword, newPassword }),
+    deleteAccount: () => request('DELETE', '/user/me'),
   },
 
   semesters: {
-    list: function () { return request('GET', '/semesters'); },
-    create: function (data) { return request('POST', '/semesters', data); },
-    update: function (id, data) { return request('PUT', '/semesters/' + id, data); },
-    delete: function (id) { return request('DELETE', '/semesters/' + id); },
-    setCurrent: function (id) { return request('POST', '/semesters/' + id + '/current'); },
-    enableShare: function (id) { return request('POST', '/semesters/' + id + '/share'); },
-    disableShare: function (id) { return request('DELETE', '/semesters/' + id + '/share'); },
+    list: () => request('GET', '/semesters'),
+    create: (data) => request('POST', '/semesters', data),
+    update: (id, data) => request('PUT', '/semesters/' + id, data),
+    delete: (id) => request('DELETE', '/semesters/' + id),
+    setCurrent: (id) => request('POST', '/semesters/' + id + '/current'),
+    enableShare: (id) => request('POST', '/semesters/' + id + '/share'),
+    disableShare: (id) => request('DELETE', '/semesters/' + id + '/share'),
   },
 
   courses: {
-    list: function (semId) { return request('GET', '/semesters/' + semId + '/courses'); },
-    create: function (semId, data) { return request('POST', '/semesters/' + semId + '/courses', data); },
-    update: function (id, data) { return request('PUT', '/courses/' + id, data); },
-    delete: function (id) { return request('DELETE', '/courses/' + id); },
+    list: (semId) => request('GET', '/semesters/' + semId + '/courses'),
+    create: (semId, data) => request('POST', '/semesters/' + semId + '/courses', data),
+    update: (id, data) => request('PUT', '/courses/' + id, data),
+    delete: (id) => request('DELETE', '/courses/' + id),
   },
 
   resources: {
-    list: function (courseId) { return request('GET', '/courses/' + courseId + '/resources'); },
-    create: function (courseId, data) { return request('POST', '/courses/' + courseId + '/resources', data); },
-    update: function (id, data) { return request('PUT', '/resources/' + id, data); },
-    delete: function (id) { return request('DELETE', '/resources/' + id); },
-    listUncategorized:   function (semId)       { return request('GET',  '/semesters/' + semId + '/resources'); },
-    createUncategorized: function (semId, data) { return request('POST', '/semesters/' + semId + '/resources', data); },
+    list: (courseId) => request('GET', '/courses/' + courseId + '/resources'),
+    create: (courseId, data) => request('POST', '/courses/' + courseId + '/resources', data),
+    update: (id, data) => request('PUT', '/resources/' + id, data),
+    delete: (id) => request('DELETE', '/resources/' + id),
+    listUncategorized: (semId) => request('GET', '/semesters/' + semId + '/resources'),
+    createUncategorized: (semId, data) => request('POST', '/semesters/' + semId + '/resources', data),
   },
 
   slots: {
-    list:   function (semId)       { return request('GET',    '/semesters/' + semId + '/slots'); },
-    create: function (semId, data) { return request('POST',   '/semesters/' + semId + '/slots', data); },
-    update: function (id, data)    { return request('PUT',    '/slots/' + id, data); },
-    delete: function (id)          { return request('DELETE', '/slots/' + id); },
+    list: (semId) => request('GET', '/semesters/' + semId + '/slots'),
+    create: (semId, data) => request('POST', '/semesters/' + semId + '/slots', data),
+    update: (id, data) => request('PUT', '/slots/' + id, data),
+    delete: (id) => request('DELETE', '/slots/' + id),
   },
 
   attendance: {
-    get: function (courseId) { return request('GET', '/courses/' + courseId + '/attendance'); },
-    upsert: function (courseId, date, status) {
-      return request('POST', '/courses/' + courseId + '/attendance', { date, status });
-    },
-    delete: function (id) { return request('DELETE', '/attendance/' + id); },
+    get: (courseId) => request('GET', '/courses/' + courseId + '/attendance'),
+    upsert: (courseId, date, status) =>
+      request('POST', '/courses/' + courseId + '/attendance', { date, status }),
+    delete: (id) => request('DELETE', '/attendance/' + id),
   },
 
   dashboard: {
-    get: function () { return request('GET', '/dashboard'); },
+    get: () => request('GET', '/dashboard'),
   },
 
   share: {
-    get: function (token) { return request('GET', '/share/' + token); },
+    get: (token) => request('GET', '/share/' + token),
   },
 
   ai: {
-    chat: function (message, context) { return request('POST', '/ai/chat', { message, context }); },
+    chat: (message, context) =>
+      request('POST', '/ai/chat', { message, context }),
   },
 };
 

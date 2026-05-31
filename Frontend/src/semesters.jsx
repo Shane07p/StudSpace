@@ -2,7 +2,7 @@
 
 import React from 'react';
 import API from './api';
-import { Icon, Card, Badge, Button, Tabs, Sheet, EmptyState, ErrorState, Skeleton, RECENT_ICON, RECENT_TONE } from './lib.jsx';
+import { Icon, Card, Badge, Button, Tabs, Sheet, EmptyState, ErrorState, Skeleton, RECENT_ICON, RECENT_TONE, ConfirmDialog } from './lib';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -77,14 +77,21 @@ function NumberStepper({ value, onChange, min = 1, max = 20, placeholder }) {
 }
 function TimeSelect({ value, onChange, times }) {
   const [open, setOpen] = React.useState(false);
+  const [dropRect, setDropRect] = React.useState(null);
   const ref = React.useRef(null);
   const listRef = React.useRef(null);
 
+  const toggle = () => {
+    if (!open && ref.current) setDropRect(ref.current.getBoundingClientRect());
+    setOpen((o) => !o);
+  };
+
   React.useEffect(() => {
     if (!open) return;
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target) && !listRef.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('scroll', () => setOpen(false), true);
+    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('scroll', () => setOpen(false), true); };
   }, [open]);
 
   React.useEffect(() => {
@@ -97,7 +104,7 @@ function TimeSelect({ value, onChange, times }) {
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         className="flex h-9 w-full items-center justify-between rounded-md border border-neutral-200/80 bg-white px-2.5 text-[12.5px] text-neutral-800 outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-neutral-200 transition-shadow"
       >
         <span className="flex items-center gap-1.5">
@@ -107,8 +114,12 @@ function TimeSelect({ value, onChange, times }) {
         <Icon name="ChevronDown" size={13} className={`text-neutral-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {open && (
-        <div ref={listRef} className="absolute z-50 mt-1 w-full rounded-md border border-neutral-200/80 bg-white shadow-lg dark:border-white/[0.08] dark:bg-neutral-900 overflow-y-auto max-h-48 py-1">
+      {open && dropRect && (
+        <div
+          ref={listRef}
+          style={{ position: 'fixed', top: dropRect.bottom + 4, left: dropRect.left, width: dropRect.width, zIndex: 9999, maxHeight: 192, overflowY: 'auto' }}
+          className="rounded-md border border-neutral-200/80 bg-white shadow-lg dark:border-white/[0.08] dark:bg-neutral-900 py-1"
+        >
           {times.map((t) => (
             <button
               key={t}
@@ -129,13 +140,20 @@ function TimeSelect({ value, onChange, times }) {
 }
 function CourseSelect({ value, onChange, courses, emptyLabel = "— Pick a course —" }) {
   const [open, setOpen] = React.useState(false);
+  const [dropRect, setDropRect] = React.useState(null);
   const ref = React.useRef(null);
+
+  const toggle = () => {
+    if (!open && ref.current) setDropRect(ref.current.getBoundingClientRect());
+    setOpen((o) => !o);
+  };
 
   React.useEffect(() => {
     if (!open) return;
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('scroll', () => setOpen(false), true);
+    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('scroll', () => setOpen(false), true); };
   }, [open]);
 
   const selected = courses.find((c) => c.id === value);
@@ -144,7 +162,7 @@ function CourseSelect({ value, onChange, courses, emptyLabel = "— Pick a cours
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         className="flex h-9 w-full items-center justify-between rounded-md border border-neutral-200/80 bg-white px-2.5 text-[12.5px] text-neutral-800 outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-neutral-200 transition-shadow"
       >
         <span className="flex items-center gap-1.5 min-w-0 overflow-hidden">
@@ -159,24 +177,15 @@ function CourseSelect({ value, onChange, courses, emptyLabel = "— Pick a cours
         <Icon name="ChevronDown" size={13} className={`text-neutral-400 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {open && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border border-neutral-200/80 bg-white shadow-lg dark:border-white/[0.08] dark:bg-neutral-900 overflow-y-auto max-h-56 py-1">
-          <button
-            type="button"
-            onClick={() => { onChange("", null); setOpen(false); }}
-            className="w-full px-3 py-2 text-left text-[12.5px] text-neutral-400 hover:bg-neutral-50 dark:hover:bg-white/[0.05] transition-colors"
-          >{emptyLabel}</button>
+      {open && dropRect && (
+        <div
+          style={{ position: 'fixed', top: dropRect.bottom + 4, left: dropRect.left, width: dropRect.width, zIndex: 9999, maxHeight: 224, overflowY: 'auto' }}
+          className="rounded-md border border-neutral-200/80 bg-white shadow-lg dark:border-white/[0.08] dark:bg-neutral-900 py-1"
+        >
+          <button type="button" onClick={() => { onChange("", null); setOpen(false); }} className="w-full px-3 py-2 text-left text-[12.5px] text-neutral-400 hover:bg-neutral-50 dark:hover:bg-white/[0.05] transition-colors">{emptyLabel}</button>
           {courses.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              data-selected={c.id === value}
-              onClick={() => { onChange(c.id, c); setOpen(false); }}
-              className={`w-full px-3 py-2 text-left text-[12.5px] transition-colors ${
-                c.id === value
-                  ? 'bg-[var(--accent)]/10 text-[var(--accent)] font-medium'
-                  : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-white/[0.05]'
-              }`}
+            <button key={c.id} type="button" onClick={() => { onChange(c.id, c); setOpen(false); }}
+              className={`w-full px-3 py-2 text-left text-[12.5px] transition-colors ${c.id === value ? 'bg-[var(--accent)]/10 text-[var(--accent)] font-medium' : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-white/[0.05]'}`}
             >
               {c.code && <span className="font-mono text-[10.5px] text-neutral-400 mr-1.5">{c.code} ·</span>}
               {c.name}
@@ -509,15 +518,14 @@ function ResourceRow({ r, onDelete }) {
   const [localNotes, setLocalNotes] = React.useState(r.notes || "");
   const isPdf = r.url && r.url.toLowerCase().includes('.pdf');
 
-  const handleDelete = async (e) => {
-    e.stopPropagation();
+  const handleDelete = async () => {
     setDeleting(true);
+    setConfirmingDelete(false);
     try {
       await API.resources.delete(r.id);
       onDelete?.(r.id);
     } catch {
       setDeleting(false);
-      setConfirmingDelete(false);
     }
   };
 
@@ -573,31 +581,12 @@ function ResourceRow({ r, onDelete }) {
                 <Icon name={isPdf ? "FileText" : "ExternalLink"} size={12} />
               </a>
             )}
-            {confirmingDelete ? (
-              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                <span className="text-[11px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">Delete?</span>
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="h-6 px-2 rounded-md text-[11px] font-medium bg-rose-500 text-white hover:bg-rose-600 transition-colors"
-                >
-                  {deleting ? <Icon name="Loader2" size={10} className="animate-spin" /> : "Yes"}
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setConfirmingDelete(false); }}
-                  className="h-6 px-2 rounded-md text-[11px] font-medium border border-neutral-200 dark:border-white/[0.08] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/[0.05] transition-colors"
-                >
-                  No
-                </button>
-              </div>
-            ) : (
               <button
                 onClick={(e) => { e.stopPropagation(); setConfirmingDelete(true); }}
                 className="grid h-6 w-6 place-items-center rounded-md text-neutral-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all opacity-0 group-hover:opacity-100"
               >
                 <Icon name="Trash2" size={12} />
               </button>
-            )}
           </div>
         </div>
       </div>
@@ -606,6 +595,13 @@ function ResourceRow({ r, onDelete }) {
         onClose={() => setNotesOpen(false)}
         resource={{ ...r, notes: localNotes }}
         onSave={handleNotesSave}
+      />
+      <ConfirmDialog
+        open={confirmingDelete}
+        title={`Delete "${r.title}"?`}
+        message="This resource will be permanently removed."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmingDelete(false)}
       />
     </>
   );
@@ -718,6 +714,7 @@ function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey
   const [resources, setResources] = React.useState(null);
   const [loadingRes, setLoadingRes] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
 
   const below = (c.attendancePercentage || 0) < 75 && (c.presentCount > 0 || c.absentCount > 0);
 
@@ -738,10 +735,14 @@ function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey
     setResources((prev) => prev ? prev.filter((r) => r.id !== id) : prev);
   };
 
-  const handleDelete = async (e) => {
+  const handleDelete = (e) => {
     e.stopPropagation();
-    if (!confirm(`Delete "${c.name}"?\nAll resources and attendance records will also be deleted.`)) return;
+    setConfirmOpen(true);
+  };
+
+  const doDelete = async () => {
     setDeleting(true);
+    setConfirmOpen(false);
     try {
       await API.courses.delete(c.id);
       onDeleted?.(c.id);
@@ -754,6 +755,7 @@ function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey
   const resCount = resources !== null ? resources.length : (c.resourceCount || 0);
 
   return (
+    <>
     <div className={`group/row rounded-lg border ${expanded ? "border-neutral-300 dark:border-white/15 shadow-[0_8px_24px_-14px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_24px_-14px_rgba(0,0,0,0.8)]" : "border-neutral-200/80 dark:border-white/[0.08]"} bg-white dark:bg-neutral-900/40 transition-all`}>
       <div
         role="button"
@@ -851,6 +853,14 @@ function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey
         </div>
       )}
     </div>
+    <ConfirmDialog
+      open={confirmOpen}
+      title={`Delete "${c.name}"?`}
+      message="All resources and attendance records will also be deleted."
+      onConfirm={doDelete}
+      onCancel={() => setConfirmOpen(false)}
+    />
+    </>
   );
 }
 
@@ -1003,6 +1013,7 @@ function TimetableSection({ semId, courses }) {
   const [slots, setSlots] = React.useState([]);
   const [editing, setEditing] = React.useState(null);
   const [sheetOpen, setSheetOpen] = React.useState(false);
+  const [confirmSlotId, setConfirmSlotId] = React.useState(null);
 
   React.useEffect(() => {
     if (!semId) return;
@@ -1071,7 +1082,14 @@ function TimetableSection({ semId, courses }) {
         slot={editing}
         courses={courses}
         onSave={saveSlot}
-        onDelete={deleteSlot}
+        onDelete={(id) => setConfirmSlotId(id)}
+      />
+      <ConfirmDialog
+        open={!!confirmSlotId}
+        title="Delete this timetable slot?"
+        message="This class slot will be removed from your weekly schedule."
+        onConfirm={() => { deleteSlot(confirmSlotId); setConfirmSlotId(null); }}
+        onCancel={() => setConfirmSlotId(null)}
       />
     </section>
   );
@@ -1099,6 +1117,7 @@ function SemesterPage() {
   const [addResDefault, setAddResDefault] = React.useState(null);
   const [addSemOpen, setAddSemOpen] = React.useState(false);
   const [addCourseOpen, setAddCourseOpen] = React.useState(false);
+  const [deleteSemOpen, setDeleteSemOpen] = React.useState(false);
 
   const fetchSemesters = React.useCallback(() => {
     setLoading(true);
@@ -1204,7 +1223,6 @@ function SemesterPage() {
 
   const deleteSemester = async () => {
     if (!sem) return;
-    if (!confirm(`Delete "${sem.label}"?\nAll courses, resources, and attendance will be permanently deleted.`)) return;
     try {
       await API.semesters.delete(sem.id);
       const next = semesters.filter((s) => s.id !== sem.id);
@@ -1452,7 +1470,7 @@ function SemesterPage() {
       {sem && (
         <div className="mt-10 flex items-center justify-end">
           <button
-            onClick={deleteSemester}
+            onClick={() => setDeleteSemOpen(true)}
             className="inline-flex items-center gap-1.5 text-[12px] text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
           >
             <Icon name="Trash2" size={12} /> Delete this semester
@@ -1522,6 +1540,13 @@ function SemesterPage() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={deleteSemOpen}
+        title={sem ? `Delete "${sem.label}"?` : "Delete semester?"}
+        message="All courses, resources, and attendance will be permanently deleted."
+        onConfirm={() => { setDeleteSemOpen(false); deleteSemester(); }}
+        onCancel={() => setDeleteSemOpen(false)}
+      />
     </div>
   );
 }

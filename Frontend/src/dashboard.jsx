@@ -2,7 +2,7 @@
 
 import React from 'react';
 import API from './api';
-import { Icon, Card, Badge, ProgressBar, Ring, Skeleton, Button, ErrorState, useCountUp, RECENT_ICON, RECENT_TONE, attTone } from './lib.jsx';
+import { Icon, Card, Badge, ProgressBar, Ring, Skeleton, Button, ErrorState, useCountUp, RECENT_ICON, RECENT_TONE, attTone } from './lib';
 
 function Greeting({ user }) {
   const hour = new Date().getHours();

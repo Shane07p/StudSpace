@@ -1,7 +1,7 @@
-// lib.jsx — shared primitives and hooks for StudSpace
-
-import React, { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as LucideIcons from 'lucide-react';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 export const NAV = [
   { id: "dashboard",  label: "Dashboard",  icon: "LayoutDashboard" },
@@ -19,7 +19,6 @@ export const ACCENTS = {
   amber:   "#f59e0b",
 };
 
-// "green" = comfortably above, "yellow" = at target but within 10pp, "red" = below target
 export function attTone(pct, target) {
   if (pct < target) return "red";
   if (pct < Math.min(100, target + 10)) return "yellow";
@@ -33,14 +32,13 @@ export const RECENT_TONE = {
   PYQ: "pyq", Pyq: "pyq", Playlist: "playlist", Notes: "notes", Link: "link", Other: "other",
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Hooks
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Hooks ────────────────────────────────────────────────────────────────────
 
 export function useCountUp(target, { duration = 900, delay = 0, decimals = 0 } = {}) {
   const [val, setVal] = useState(0);
   useEffect(() => {
-    let raf, start;
+    let raf;
+    let start;
     const t0 = performance.now() + delay;
     const ease = (x) => 1 - Math.pow(1 - x, 3);
     const tick = (now) => {
@@ -62,9 +60,7 @@ export function useLoaded(delay = 700) {
   return ready;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Icon (lucide-react)
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Icon ─────────────────────────────────────────────────────────────────────
 
 export function Icon({ name, size = 16, className = '', strokeWidth = 1.75 }) {
   const Comp = LucideIcons[name];
@@ -72,21 +68,11 @@ export function Icon({ name, size = 16, className = '', strokeWidth = 1.75 }) {
   return <Comp size={size} strokeWidth={strokeWidth} className={className} style={{ display: 'inline-flex', flexShrink: 0 }} />;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Primitives
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Primitives ───────────────────────────────────────────────────────────────
 
 export function Card({ className = "", children, ...rest }) {
   return (
-    <div
-      className={className}
-      style={{
-        backgroundColor: "var(--card-bg)",
-        border: "1px solid var(--card-border)",
-        borderRadius: "12px",
-      }}
-      {...rest}
-    >
+    <div className={className} style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)", borderRadius: "12px" }} {...rest}>
       {children}
     </div>
   );
@@ -115,10 +101,7 @@ export function Badge({ children, tone = "neutral", className = "" }) {
 export function ProgressBar({ value, className = "" }) {
   return (
     <div className={`h-1 w-full overflow-hidden rounded-full bg-neutral-200/70 dark:bg-white/[0.06] ${className}`}>
-      <div
-        className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-1000 ease-out"
-        style={{ width: `${value}%` }}
-      />
+      <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-1000 ease-out" style={{ width: `${value}%` }} />
     </div>
   );
 }
@@ -129,11 +112,8 @@ export function Ring({ value, size = 44, stroke = 3.5, color = "var(--accent)" }
   const offset = c - (value / 100) * c;
   return (
     <svg width={size} height={size} className="-rotate-90">
-      <circle cx={size/2} cy={size/2} r={r} stroke="currentColor" strokeWidth={stroke} fill="none"
-              className="text-neutral-200 dark:text-white/[0.08]" />
-      <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none"
-              strokeLinecap="round" strokeDasharray={c} strokeDashoffset={offset}
-              style={{ transition: "stroke-dashoffset 1000ms cubic-bezier(.22,1,.36,1)" }} />
+      <circle cx={size/2} cy={size/2} r={r} stroke="currentColor" strokeWidth={stroke} fill="none" className="text-neutral-200 dark:text-white/[0.08]" />
+      <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={offset} style={{ transition: "stroke-dashoffset 1000ms cubic-bezier(.22,1,.36,1)" }} />
     </svg>
   );
 }
@@ -143,11 +123,7 @@ export function Skeleton({ className = "" }) {
 }
 
 export function Button({ variant = "default", size = "sm", className = "", children, ...rest }) {
-  const sizes = {
-    sm: "h-8 px-2.5 text-[12px]",
-    md: "h-9 px-3 text-[13px]",
-    icon: "h-8 w-8",
-  };
+  const sizes = { sm: "h-8 px-2.5 text-[12px]", md: "h-9 px-3 text-[13px]", icon: "h-8 w-8" };
   const variants = {
     default: "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 shadow-sm",
     outline: "border border-neutral-200/80 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-neutral-200 dark:hover:bg-white/[0.06]",
@@ -155,10 +131,7 @@ export function Button({ variant = "default", size = "sm", className = "", child
     accent:  "bg-[var(--accent)] text-white hover:opacity-90 shadow-sm",
   };
   return (
-    <button
-      className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md font-medium transition-colors ${sizes[size]} ${variants[variant]} ${className}`}
-      {...rest}
-    >
+    <button className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md font-medium transition-colors ${sizes[size]} ${variants[variant]} ${className}`} {...rest}>
       {children}
     </button>
   );
@@ -168,25 +141,17 @@ export function Tabs({ items, value, onChange, className = "" }) {
   return (
     <div className={`inline-flex items-center gap-0.5 rounded-md border border-neutral-200/80 dark:border-white/[0.06] bg-neutral-50 dark:bg-white/[0.03] p-0.5 ${className}`}>
       {items.map((it) => {
-        const id = it.id ?? it;
-        const label = it.label ?? it;
+        const id    = typeof it === 'string' ? it : (it.id    ?? it.label ?? '');
+        const label = typeof it === 'string' ? it : (it.label ?? it.id    ?? '');
+        const icon  = typeof it === 'string' ? undefined : it.icon;
+        const badge = typeof it === 'string' ? undefined : it.badge;
         const isActive = value === id;
         return (
-          <button
-            key={id}
-            onClick={() => onChange(id)}
-            className={`relative inline-flex items-center gap-1.5 rounded-[5px] px-2.5 py-1 text-[12px] font-medium transition-colors ${
-              isActive
-                ? "bg-white text-neutral-900 shadow-sm dark:bg-white/[0.08] dark:text-white"
-                : "text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100"
-            }`}
-          >
-            {it.icon && <Icon name={it.icon} size={12} />}
+          <button key={id} onClick={() => onChange(id)} className={`relative inline-flex items-center gap-1.5 rounded-[5px] px-2.5 py-1 text-[12px] font-medium transition-colors ${isActive ? "bg-white text-neutral-900 shadow-sm dark:bg-white/[0.08] dark:text-white" : "text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100"}`}>
+            {icon && <Icon name={icon} size={12} />}
             {label}
-            {it.badge != null && (
-              <span className={`ml-0.5 rounded px-1 text-[10px] tabular-nums ${isActive ? "bg-neutral-100 text-neutral-600 dark:bg-white/[0.08] dark:text-neutral-300" : "bg-neutral-200/70 text-neutral-500 dark:bg-white/[0.06] dark:text-neutral-400"}`}>
-                {it.badge}
-              </span>
+            {badge != null && (
+              <span className={`ml-0.5 rounded px-1 text-[10px] tabular-nums ${isActive ? "bg-neutral-100 text-neutral-600 dark:bg-white/[0.08] dark:text-neutral-300" : "bg-neutral-200/70 text-neutral-500 dark:bg-white/[0.06] dark:text-neutral-400"}`}>{badge}</span>
             )}
           </button>
         );
@@ -204,25 +169,45 @@ export function Sheet({ open, onClose, title, children, width = 420 }) {
   }, [open, onClose]);
 
   if (!open) return null;
-
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center px-4">
-      <div
-        onClick={onClose}
-        className="absolute inset-0 bg-neutral-900/60 dark:bg-black/70 backdrop-blur-[2px]"
-      />
-      <div
-        style={{ width: "min(" + width + "px, calc(100vw - 32px))", maxHeight: "90vh" }}
-        className="relative z-10 flex flex-col bg-white dark:bg-neutral-950 rounded-xl border border-neutral-200/80 dark:border-white/[0.06] shadow-2xl"
-      >
+      <div onClick={onClose} className="absolute inset-0 bg-neutral-900/60 dark:bg-black/70 backdrop-blur-[2px]" />
+      <div style={{ width: `min(${width}px, calc(100vw - 32px))`, maxHeight: "90vh" }} className="relative z-10 flex flex-col bg-white dark:bg-neutral-950 rounded-xl border border-neutral-200/80 dark:border-white/[0.06] shadow-2xl">
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-200/80 dark:border-white/[0.06] px-5">
           <h2 className="text-[14px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">{title}</h2>
           <button onClick={onClose} className="grid h-7 w-7 place-items-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-white/[0.06]">
             <Icon name="X" size={14} />
           </button>
         </div>
-        <div className="overflow-y-auto" style={{ maxHeight: "calc(90vh - 56px)" }}>
-          {children}
+        <div className="overflow-y-auto" style={{ maxHeight: "calc(90vh - 56px)" }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+export function ConfirmDialog({ open, title, message, onConfirm, onCancel, confirmLabel = "OK", danger = true }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") onCancel?.(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onCancel]);
+
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div onClick={onCancel} className="absolute inset-0 bg-neutral-900/60 dark:bg-black/70 backdrop-blur-[2px]" />
+      <div className="relative z-10 w-full max-w-sm rounded-xl border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-950 shadow-2xl p-6">
+        <h3 className="text-[14px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">{title}</h3>
+        {message && <p className="mt-1.5 text-[12.5px] text-neutral-500 dark:text-neutral-400 leading-relaxed">{message}</p>}
+        <div className="flex items-center justify-end gap-2 mt-5">
+          <Button variant="outline" onClick={onCancel}>Cancel</Button>
+          <button
+            onClick={onConfirm}
+            className={`inline-flex items-center justify-center h-8 px-3 rounded-md text-[12px] font-medium text-white transition-colors ${danger ? "bg-rose-600 hover:bg-rose-700" : "bg-[var(--accent)] hover:opacity-90"}`}
+          >
+            {confirmLabel}
+          </button>
         </div>
       </div>
     </div>
@@ -237,11 +222,7 @@ export function ErrorState({ onRetry, title = "Something went wrong", body = "Ch
       </div>
       <h3 className="mt-4 text-[14px] font-semibold tracking-tight text-neutral-800 dark:text-neutral-100">{title}</h3>
       <p className="mt-1 max-w-[280px] text-[12.5px] text-neutral-500 dark:text-neutral-400">{body}</p>
-      {onRetry && (
-        <div className="mt-4">
-          <Button variant="outline" onClick={onRetry}><Icon name="RotateCcw" size={12} /> Retry</Button>
-        </div>
-      )}
+      {onRetry && <div className="mt-4"><Button variant="outline" onClick={onRetry}><Icon name="RotateCcw" size={12} /> Retry</Button></div>}
     </div>
   );
 }

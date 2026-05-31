@@ -2,7 +2,7 @@
 
 import React from 'react';
 import API from './api';
-import { Icon, Card, Badge, Button, Tabs, Sheet, Skeleton, ErrorState, attTone } from './lib.jsx';
+import { Icon, Card, Badge, Button, Tabs, Sheet, Skeleton, ErrorState, attTone } from './lib';
 
 const INDIAN_COLLEGES = [
   // IITs
@@ -93,18 +93,25 @@ function CollegeSelect({ value, onChange, inputCls }) {
     );
   }
 
+  const [dropRect, setDropRect] = React.useState(null);
+
+  const toggle = () => {
+    if (!open && ref.current) setDropRect(ref.current.getBoundingClientRect());
+    setOpen(o => !o);
+  };
+
   return (
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen(o => !o)}
+        onClick={toggle}
         className={`${inputCls} w-full flex items-center justify-between gap-2 text-left ${!value ? "text-neutral-400" : ""}`}
       >
         <span className="truncate">{value || "Select college…"}</span>
         <Icon name="ChevronDown" size={13} className={`shrink-0 text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && (
-        <div className="absolute z-50 top-full mt-1 w-full rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
+      {open && dropRect && (
+        <div style={{ position: 'fixed', top: dropRect.bottom + 4, left: dropRect.left, width: dropRect.width, zIndex: 9999 }} className="rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
           <div className="p-2 border-b border-neutral-100 dark:border-white/[0.06]">
             <div className="relative">
               <Icon name="Search" size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
@@ -121,25 +128,10 @@ function CollegeSelect({ value, onChange, inputCls }) {
             {filtered.length === 0 ? (
               <div className="px-3 py-2 text-[12px] text-neutral-400">No colleges found</div>
             ) : filtered.map(c => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => {
-                  if (c === "Other") { setCustom(true); onChange(""); }
-                  else { onChange(c); }
-                  setOpen(false);
-                  setSearch("");
-                }}
-                className={`w-full text-left px-3 py-2 text-[12.5px] transition-colors ${
-                  c === value
-                    ? "bg-[var(--accent)]/10 text-[var(--accent)] font-medium"
-                    : c === "Other"
-                    ? "text-neutral-500 dark:text-neutral-400 italic hover:bg-neutral-50 dark:hover:bg-white/[0.04]"
-                    : "text-neutral-800 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-white/[0.04]"
-                }`}
-              >
-                {c}
-              </button>
+              <button key={c} type="button"
+                onClick={() => { if (c === "Other") { setCustom(true); onChange(""); } else { onChange(c); } setOpen(false); setSearch(""); }}
+                className={`w-full text-left px-3 py-2 text-[12.5px] transition-colors ${c === value ? "bg-[var(--accent)]/10 text-[var(--accent)] font-medium" : c === "Other" ? "text-neutral-500 dark:text-neutral-400 italic hover:bg-neutral-50 dark:hover:bg-white/[0.04]" : "text-neutral-800 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-white/[0.04]"}`}
+              >{c}</button>
             ))}
           </div>
         </div>
