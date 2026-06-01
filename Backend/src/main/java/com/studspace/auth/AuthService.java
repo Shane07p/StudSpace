@@ -27,12 +27,17 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest req) {
-        User user = userService.findByUsername(req.getUsername());
+        User user;
+        try {
+            user = userService.findByUsername(req.getUsername());
+        } catch (Exception e) {
+            throw new BadCredentialsException("Incorrect email or password");
+        }
         if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
             throw new BadCredentialsException("This account uses Google sign-in. Please use 'Continue with Google'.");
         }
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
-            throw new BadCredentialsException("Invalid credentials");
+            throw new BadCredentialsException("Incorrect email or password");
         }
         String token = jwtUtil.generateToken(user.getId());
         UserProfileDto profile = userService.toProfileDto(user);
