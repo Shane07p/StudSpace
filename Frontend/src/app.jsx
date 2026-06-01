@@ -263,6 +263,35 @@ function IconBtn({ name, onClick }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Mobile bottom nav (visible only below md breakpoint)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function MobileBottomNav({ active, onNav }) {
+  return (
+    <nav
+      className="md:hidden fixed bottom-0 inset-x-0 z-40 flex border-t safe-area-inset-bottom"
+      style={{ backgroundColor: "var(--topbar-bg)", borderTopColor: "var(--topbar-border-color)" }}
+    >
+      {NAV.map(n => {
+        const isActive = active === n.id;
+        return (
+          <button
+            key={n.id}
+            onClick={() => onNav(n.id)}
+            className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors ${
+              isActive ? "text-[var(--accent)]" : "text-neutral-400 dark:text-neutral-500"
+            }`}
+          >
+            <Icon name={n.icon} size={19} strokeWidth={isActive ? 2.25 : 1.75} />
+            <span>{n.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // App
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -335,7 +364,7 @@ function App() {
 
       <div className="flex min-w-0 flex-1 flex-col" style={{ backgroundColor: "var(--content-bg)" }}>
         <Topbar active={active} dark={t.dark} onDark={(v) => setTweak("dark", v)} onNav={goto} user={user} />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
           <PageErrorBoundary key={active}>
             {active === "dashboard"  && <Dashboard loaded={loaded} onNav={goto} user={user} />}
             {active === "semesters"  && <SemesterPage />}
@@ -345,6 +374,8 @@ function App() {
           </PageErrorBoundary>
         </main>
       </div>
+
+      <MobileBottomNav active={active} onNav={goto} />
 
       <TweaksPanel title="Tweaks">
         <TweakSection label="Appearance" />

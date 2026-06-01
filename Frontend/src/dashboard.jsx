@@ -5,15 +5,13 @@ import API from './api';
 import { Icon, Card, Badge, ProgressBar, Ring, Skeleton, Button, ErrorState, useCountUp, RECENT_ICON, RECENT_TONE, attTone } from './lib';
 
 function Greeting({ user }) {
-  const hour = new Date().getHours();
-  const part = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
   const date = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
   const firstName = user ? (user.fullName || user.username || "").split(" ")[0] : "…";
 
   return (
     <div className="flex flex-col gap-1.5">
       <h1 className="text-[26px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
-        Good {part}, {firstName} <span className="ml-0.5">👋</span>
+        Hey, {firstName} <span className="ml-0.5">👋</span>
       </h1>
       <p className="text-[13px] text-neutral-500 dark:text-neutral-400">{date}</p>
     </div>

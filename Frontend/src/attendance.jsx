@@ -67,29 +67,31 @@ function SummaryBar({ summary, threshold }) {
 
   return (
     <Card className="relative overflow-hidden p-5">
-      <div className="flex flex-wrap items-center gap-6">
-        <div className="relative">
-          <Ring value={Math.round(percentage)} size={72} stroke={5} color={ringColor} />
-          <div className="absolute inset-0 grid place-items-center">
-            <span className={`text-[16px] font-semibold tabular-nums ${pctCls}`}>
-              {animatedPct}%
-            </span>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+        <div className="flex items-center gap-4 sm:gap-6 sm:contents">
+          <div className="relative">
+            <Ring value={Math.round(percentage)} size={72} stroke={5} color={ringColor} />
+            <div className="absolute inset-0 grid place-items-center">
+              <span className={`text-[16px] font-semibold tabular-nums ${pctCls}`}>
+                {animatedPct}%
+              </span>
+            </div>
           </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">This semester</div>
-          <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1.5">
-            <Tally label="Attended"  value={present}   dotClass="bg-emerald-500" />
-            <Tally label="Absent"    value={absent}    dotClass="bg-rose-500" />
-            <Tally label="Cancelled" value={cancelled} dotClass="bg-neutral-300 dark:bg-neutral-600" />
-            <div className="text-[12px] text-neutral-500 dark:text-neutral-400">
-              <span className="font-medium text-neutral-700 dark:text-neutral-200 tabular-nums">{present}</span>
-              <span className="mx-1 text-neutral-400">/</span>
-              <span className="tabular-nums">{counted}</span> classes counted
+          <div className="flex flex-col gap-2">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">This semester</div>
+            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1.5">
+              <Tally label="Attended"  value={present}   dotClass="bg-emerald-500" />
+              <Tally label="Absent"    value={absent}    dotClass="bg-rose-500" />
+              <Tally label="Cancelled" value={cancelled} dotClass="bg-neutral-300 dark:bg-neutral-600" />
+              <div className="text-[12px] text-neutral-500 dark:text-neutral-400">
+                <span className="font-medium text-neutral-700 dark:text-neutral-200 tabular-nums">{present}</span>
+                <span className="mx-1 text-neutral-400">/</span>
+                <span className="tabular-nums">{counted}</span> classes counted
+              </div>
             </div>
           </div>
         </div>
-        <div className={`ml-auto flex items-center gap-2.5 rounded-md px-3 py-2 ${chipBg}`}>
+        <div className={`sm:ml-auto flex items-center gap-2.5 rounded-md px-3 py-2 ${chipBg}`}>
           <Icon name={iconName} size={16} className={chipIconCls} />
           <div className="text-[12.5px] leading-snug">
             <div className={`font-semibold ${chipTxtCls}`}>

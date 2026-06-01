@@ -542,7 +542,7 @@ function ResourceRow({ r, onDelete }) {
   return (
     <>
       <div className="flex flex-col rounded-md hover:bg-neutral-50 dark:hover:bg-white/[0.03] transition-colors group">
-        <div className="grid grid-cols-[24px_72px_1fr_auto_auto] items-center gap-3 px-2.5 py-2">
+        <div className="grid grid-cols-[20px_60px_1fr_auto] sm:grid-cols-[24px_72px_1fr_auto_auto] items-center gap-2 sm:gap-3 px-2 sm:px-2.5 py-2">
           <Icon name={iconName} size={14} className="text-neutral-400 dark:text-neutral-500" />
           <Badge tone={tone}>{TYPE_LABEL[r.type] || r.type}</Badge>
           <div className="min-w-0">
@@ -556,7 +556,7 @@ function ResourceRow({ r, onDelete }) {
               </div>
             )}
           </div>
-          <div className="text-[11px] text-neutral-400 dark:text-neutral-500 tabular-nums">{when}</div>
+          <div className="hidden sm:block text-[11px] text-neutral-400 dark:text-neutral-500 tabular-nums">{when}</div>
           <div className="flex items-center justify-end gap-1">
             <button
               onClick={(e) => { e.stopPropagation(); setNotesOpen(true); }}
@@ -803,7 +803,7 @@ function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey
 
       {expanded && (
         <div className="border-t border-neutral-200/70 dark:border-white/[0.06] px-4 py-4 page-fade">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <Tabs
               value={tab}
               onChange={setTab}
@@ -813,7 +813,7 @@ function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey
               ]}
             />
             {tab === "resources" && (
-              <Button onClick={() => onAddResource(c.id)}>
+              <Button className="w-full sm:w-auto" onClick={() => onAddResource(c.id)}>
                 <Icon name="Plus" size={12} strokeWidth={2.25} /> Add resource
               </Button>
             )}
@@ -838,8 +838,8 @@ function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey
                 />
               ) : (
                 <div className="-mx-2 flex flex-col gap-0.5">
-                  <div className="grid grid-cols-[24px_72px_1fr_auto_64px] gap-3 px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                    <span /><span>Type</span><span>Title</span><span>Added</span><span />
+                  <div className="grid grid-cols-[20px_60px_1fr_40px] sm:grid-cols-[24px_72px_1fr_auto_64px] gap-2 sm:gap-3 px-2 sm:px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    <span /><span>Type</span><span>Title</span><span className="hidden sm:block">Added</span><span className="hidden sm:block" />
                   </div>
                   {resources.map((r) => (
                     <ResourceRow key={r.id} r={r} onDelete={handleResourceDeleted} />
@@ -1302,7 +1302,7 @@ function SemesterPage() {
             {sem?.current ? "Current semester · " : (sem ? "Archived · " : "")}{courses.length} course{courses.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 shrink-0">
           <Button variant="ghost" onClick={() => setAddSemOpen(true)}>
             <Icon name="FolderPlus" size={12} /> New semester
           </Button>
@@ -1405,8 +1405,8 @@ function SemesterPage() {
             </div>
           ) : (
             <div className="rounded-lg border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-900/40 -mx-0 overflow-hidden">
-              <div className="grid grid-cols-[24px_72px_1fr_auto_64px] gap-3 px-2.5 pb-1.5 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                <span /><span>Type</span><span>Title</span><span>Added</span><span />
+              <div className="grid grid-cols-[20px_60px_1fr_40px] sm:grid-cols-[24px_72px_1fr_auto_64px] gap-2 sm:gap-3 px-2 sm:px-2.5 pb-1.5 pt-2.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                <span /><span>Type</span><span>Title</span><span className="hidden sm:block">Added</span><span className="hidden sm:block" />
               </div>
               <div className="flex flex-col gap-0.5 pb-1">
                 {uncategorized.map((r) => (
