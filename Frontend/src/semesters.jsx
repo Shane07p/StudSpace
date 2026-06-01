@@ -209,10 +209,11 @@ export function AddResourceSheet({ open, onClose, semId, courses, defaultCourseI
   const [saving, setSaving] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
   const [err, setErr] = React.useState("");
+  const [autoDetected, setAutoDetected] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) return;
-    setType("PYQ"); setTitle(""); setUrl(""); setErr("");
+    setType("PYQ"); setTitle(""); setUrl(""); setErr(""); setAutoDetected(false);
     setCourseId(defaultCourseId ?? "");
   }, [open, defaultCourseId]);
 
