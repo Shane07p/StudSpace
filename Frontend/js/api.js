@@ -35,7 +35,7 @@
     const json = await res.json();
     if (res.status === 401) {
       if (token) { clearToken(); window.location.href = resolveSignIn(); }
-      throw new Error(json.message || 'Invalid username or password');
+      throw new Error(json.message || 'Incorrect email or password');
     }
     if (!json.success) throw new Error(json.message || 'Request failed');
     return json.data;

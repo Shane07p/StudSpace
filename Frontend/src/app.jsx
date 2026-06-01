@@ -163,7 +163,7 @@ const CRUMB = {
   dashboard:  { icon: "LayoutDashboard", label: "Dashboard" },
   semesters:  { icon: "BookOpen",        label: "Semesters" },
   attendance: { icon: "CalendarCheck2",  label: "Attendance" },
-  calculator: { icon: "Calculator",      label: "Calculator" },
+  calculator: { icon: "Calculator",      label: "Grades" },
   profile:    { icon: "User",            label: "Profile" },
 };
 
