@@ -175,11 +175,13 @@ function PlannerCard({ state, setState, courses }) {
         <>
           <div className="mt-5 flex flex-col gap-1.5">
             {courses.map((c) => (
-              <div key={c.id} className="grid grid-cols-[88px_1fr_auto] items-center gap-3 rounded-md px-2 py-2 hover:bg-neutral-50 dark:hover:bg-white/[0.03] transition-colors">
-                <span className="font-mono text-[11px] tracking-wider text-neutral-400 dark:text-neutral-500">{c.code || "—"}</span>
-                <div className="min-w-0">
-                  <div className="truncate text-[13px] font-medium text-neutral-800 dark:text-neutral-100">{c.name}</div>
-                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400 tabular-nums">{c.credits} credits</div>
+              <div key={c.id} className="flex flex-col gap-1.5 sm:grid sm:grid-cols-[88px_1fr_auto] sm:items-center sm:gap-3 rounded-md px-2 py-2 hover:bg-neutral-50 dark:hover:bg-white/[0.03] transition-colors">
+                <div className="flex items-center gap-2 sm:contents">
+                  <span className="font-mono text-[11px] tracking-wider text-neutral-400 dark:text-neutral-500 shrink-0">{c.code || "—"}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[13px] font-medium text-neutral-800 dark:text-neutral-100">{c.name}</div>
+                    <div className="text-[11px] text-neutral-500 dark:text-neutral-400 tabular-nums">{c.credits} credits</div>
+                  </div>
                 </div>
                 <GradePicker value={plan[c.id] || "A+"} onChange={(g) => setGrade(c.id, g)} />
               </div>

@@ -37,7 +37,7 @@ function StatusToggle({ value, onChange }) {
         <button
           key={s.id}
           onClick={() => onChange(s.id)}
-          className={`relative z-10 inline-flex items-center justify-center gap-1 rounded-[5px] px-2.5 py-1 text-[11.5px] font-medium transition-colors duration-300 min-w-[72px] ${
+          className={`relative z-10 inline-flex items-center justify-center gap-1 rounded-[5px] px-1.5 sm:px-2.5 py-1 text-[11px] sm:text-[11.5px] font-medium transition-colors duration-300 min-w-[60px] sm:min-w-[72px] ${
             value === s.id ? s.color : "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
           }`}
         >
@@ -234,22 +234,24 @@ function ClassRow({ rec, onChange, onDelete }) {
   const dayStr = d.toLocaleDateString(undefined, { weekday: "short" });
   const year = d.getFullYear();
   return (
-    <div className={`group grid grid-cols-[20px_1fr_auto] items-center gap-3 rounded-md px-3 py-2.5 transition-colors ${STATUS_ROW_AT[rec.status]}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT_AT[rec.status]} transition-colors duration-300`} />
-      <div className="flex items-baseline gap-3 min-w-0">
-        <span className="text-[13px] font-medium text-neutral-800 dark:text-neutral-100 tabular-nums">{dateStr}</span>
-        <span className="text-[11.5px] text-neutral-500 dark:text-neutral-400 w-10">{dayStr}</span>
-        <span className="text-[11px] text-neutral-400 dark:text-neutral-500 hidden sm:inline tabular-nums">{year}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <StatusToggle value={rec.status} onChange={(v) => onChange(v)} />
+    <div className={`group rounded-md px-3 py-2 transition-colors ${STATUS_ROW_AT[rec.status]}`}>
+      <div className="flex items-center gap-3">
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT_AT[rec.status]} transition-colors duration-300`} />
+        <div className="flex items-baseline gap-2 min-w-0 flex-1">
+          <span className="text-[13px] font-medium text-neutral-800 dark:text-neutral-100 tabular-nums shrink-0">{dateStr}</span>
+          <span className="text-[11.5px] text-neutral-500 dark:text-neutral-400 shrink-0">{dayStr}</span>
+          <span className="text-[11px] text-neutral-400 dark:text-neutral-500 hidden sm:inline tabular-nums">{year}</span>
+        </div>
         <button
           onClick={onDelete}
           title="Delete record"
-          className="opacity-0 group-hover:opacity-100 grid h-6 w-6 place-items-center rounded text-neutral-400 hover:bg-rose-50 dark:hover:bg-rose-500/[0.08] hover:text-rose-500 transition-all"
+          className="opacity-0 group-hover:opacity-100 shrink-0 grid h-6 w-6 place-items-center rounded text-neutral-400 hover:bg-rose-50 dark:hover:bg-rose-500/[0.08] hover:text-rose-500 transition-all"
         >
           <Icon name="Trash2" size={12} />
         </button>
+      </div>
+      <div className="mt-1.5 ml-5">
+        <StatusToggle value={rec.status} onChange={(v) => onChange(v)} />
       </div>
     </div>
   );
@@ -453,7 +455,7 @@ function AttendancePage() {
         <SummaryBar summary={summary} threshold={threshold} />
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           {viewMode === "list" && (
             <Tabs
