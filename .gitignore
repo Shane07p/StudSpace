@@ -22,8 +22,9 @@ CODEBASE.md
 # JS comparison folder (not part of the repo)
 FrontendJS/
 
-# README managed separately — edit before committing
-README.md
+# Dev tooling scripts — not part of the app
+benchmark.mjs
+seed.mjs
 
 # IDE
 .idea/
