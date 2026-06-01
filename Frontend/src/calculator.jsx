@@ -285,7 +285,7 @@ function CalculatorPage() {
         <div>
           <div className="flex items-center gap-2 text-[12px] text-neutral-500 dark:text-neutral-400">
             <Icon name="Calculator" size={12} />
-            <span>Calculator</span>
+            <span>Grades</span>
           </div>
           <h1 className="mt-1.5 text-[24px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">CGPA & SGPA</h1>
           <p className="mt-1 text-[12.5px] text-neutral-500 dark:text-neutral-400">Figure out exactly what this semester needs to look like.</p>
