@@ -234,6 +234,7 @@ export function AddResourceSheet({ open, onClose, semId, courses, defaultCourseI
       });
       const json = await res.json();
       if (json.success) {
+        setErr("");
         setUrl(json.data.url);
         setType('NOTES');
         setAutoDetected(true);
