@@ -2,8 +2,8 @@
 
 import React from 'react';
 import API from './api';
-import { Icon, Button, useLoaded, NAV, ACCENTS } from './lib';
-import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakColor, TweakRadio } from './tweaks-panel.jsx';
+import { Icon, Button, useLoaded, NAV } from './lib';
+import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakRadio } from './tweaks-panel.jsx';
 import Dashboard from './dashboard.jsx';
 import SemesterPage from './semesters.jsx';
 import AttendancePage from './attendance.jsx';
@@ -296,7 +296,6 @@ function MobileBottomNav({ active, onNav }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TWEAK_DEFAULTS = {
-  accent: localStorage.getItem("ss-accent-key") || "indigo",
   dark: localStorage.getItem("ss-theme") === "dark",
   sidebarCollapsed: localStorage.getItem("ss-sidebar") === "1",
 };
@@ -321,12 +320,6 @@ function App() {
   React.useEffect(() => {
     localStorage.setItem("ss-theme", t.dark ? "dark" : "light");
   }, [t.dark]);
-
-  React.useEffect(() => {
-    document.documentElement.style.setProperty("--accent", ACCENTS[t.accent] || ACCENTS.indigo);
-    localStorage.setItem("ss-accent", ACCENTS[t.accent] || ACCENTS.indigo);
-    localStorage.setItem("ss-accent-key", t.accent);
-  }, [t.accent]);
 
   React.useEffect(() => {
     API.user.me().then(u => {
@@ -380,15 +373,6 @@ function App() {
       <TweaksPanel title="Tweaks">
         <TweakSection label="Appearance" />
         <TweakToggle label="Dark mode" value={t.dark} onChange={(v) => setTweak("dark", v)} />
-        <TweakColor
-          label="Accent"
-          value={ACCENTS[t.accent]}
-          options={Object.values(ACCENTS)}
-          onChange={(hex) => {
-            const key = Object.keys(ACCENTS).find(k => ACCENTS[k] === hex) || "indigo";
-            setTweak("accent", key);
-          }}
-        />
         <TweakSection label="Layout" />
         <TweakToggle label="Collapse sidebar" value={collapsed} onChange={(v) => { setCollapsed(v); setTweak("sidebarCollapsed", v); }} />
         <TweakSection label="Navigation" />

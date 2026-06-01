@@ -1,7 +1,6 @@
 // home.js — interactive behaviors for StudSpace landing
 // - scroll-reveal (with stagger)
 // - animated counters on scroll
-// - accent color picker
 // - theme toggle (light/dark, system default)
 // - "try-it" mini resource adder
 // - "build your StudSpace" 3-step onboarding wizard
@@ -25,21 +24,6 @@
   if (root.classList.contains("dark")) {
     document.querySelector("#theme-toggle [data-lucide]")?.setAttribute("data-lucide", "sun");
   }
-
-  // ─── Accent picker ────────────────────────────────────────────────────────
-  const setAccent = (hex) => {
-    root.style.setProperty("--accent", hex);
-    localStorage.setItem("ss-accent", hex);
-    document.querySelectorAll(".accent-swatch").forEach((s) => {
-      s.classList.toggle("active", s.dataset.accent === hex);
-    });
-  };
-  const storedAccent = localStorage.getItem("ss-accent");
-  if (storedAccent) setAccent(storedAccent);
-  document.querySelectorAll(".accent-swatch").forEach((s) => {
-    s.classList.toggle("active", s.dataset.accent === (storedAccent || "#6366f1"));
-    s.addEventListener("click", () => setAccent(s.dataset.accent));
-  });
 
   // ─── Footer: no dynamic columns needed ───────────────────────────────────
 

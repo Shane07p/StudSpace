@@ -11,13 +11,6 @@ export const NAV = [
   { id: "profile",    label: "Profile",    icon: "User" },
 ];
 
-export const ACCENTS = {
-  indigo:  "#6366f1",
-  violet:  "#8b5cf6",
-  emerald: "#10b981",
-  rose:    "#f43f5e",
-  amber:   "#f59e0b",
-};
 
 export function attTone(pct, target) {
   if (pct < target) return "red";

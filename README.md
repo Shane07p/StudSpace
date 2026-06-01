@@ -16,7 +16,7 @@ A full-stack academic workspace for university students — organize semesters, 
 - **Google OAuth** — Sign in with Google in addition to email/password
 - **AI Chat** — Semester-aware study assistant powered by Groq LLaMA 3.3 70B
 - **PDF Upload** — Upload study materials to Cloudinary (PDF only, 25 MB limit)
-- **Dark mode & accent colour** — Persisted in `localStorage`
+- **Dark mode** — Persisted in `localStorage`
 - **Rate limiting** — 5 login attempts / 15 min / IP (Bucket4j)
 
 ---
@@ -283,8 +283,6 @@ All paths are relative to `/api`. Protected endpoints require `Authorization: Be
 |-----|--------|-------------|
 | `ss-token` | JWT string | Auth token |
 | `ss-theme` | `'dark'` \| `''` | Dark mode |
-| `ss-accent` | hex colour | Accent colour |
-| `ss-accent-key` | name string | Accent name (e.g. `'indigo'`) |
 | `ss-sidebar` | `'1'` \| `''` | Sidebar collapsed state |
 | `ss-att-threshold` | number (50–100) | Attendance threshold % (default 75) |
 
