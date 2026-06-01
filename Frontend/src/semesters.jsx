@@ -223,6 +223,11 @@ export function AddResourceSheet({ open, onClose, semId, courses, defaultCourseI
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 25 * 1024 * 1024) {
+      setErr("File too large — maximum is 25 MB.");
+      e.target.value = '';
+      return;
+    }
     setUploading(true); setErr("");
     try {
       const form = new FormData();
@@ -232,7 +237,8 @@ export function AddResourceSheet({ open, onClose, semId, courses, defaultCourseI
         headers: { 'Authorization': 'Bearer ' + API.getToken() },
         body: form,
       });
-      const json = await res.json();
+      let json;
+      try { json = await res.json(); } catch { setErr(`Upload failed (${res.status}).`); return; }
       if (json.success) {
         setErr("");
         setUrl(json.data.url);
