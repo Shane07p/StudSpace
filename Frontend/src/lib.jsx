@@ -7,7 +7,7 @@ export const NAV = [
   { id: "dashboard",  label: "Dashboard",  icon: "LayoutDashboard" },
   { id: "semesters",  label: "Semesters",  icon: "BookOpen" },
   { id: "attendance", label: "Attendance", icon: "CalendarCheck2" },
-  { id: "calculator", label: "Calculator", icon: "Calculator" },
+  { id: "calculator", label: "Grades",     icon: "Calculator" },
   { id: "profile",    label: "Profile",    icon: "User" },
 ];
 
