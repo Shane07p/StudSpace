@@ -35,6 +35,9 @@ public class UploadService {
 
     public String uploadPdf(MultipartFile file) {
         checkConfigured();
+        if (!"application/pdf".equals(file.getContentType())) {
+            throw new BadRequestException("Only PDF files are allowed.");
+        }
         try {
             String ext = ".pdf";
             String original = file.getOriginalFilename();
