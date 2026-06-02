@@ -219,18 +219,21 @@ All paths are relative to `/api`. Protected endpoints require `Authorization: Be
 | `GET` | `/user/me` | Yes | Get current user profile |
 | `PUT` | `/user/me` | Yes | Update profile (name, college, branch, year, bio) |
 | `PUT` | `/user/me/handles` | Yes | Update social / coding handles |
+| `POST` | `/user/me/photo` | Yes | Set profile photo URL |
+| `POST` | `/user/me/cover` | Yes | Set cover photo URL |
 | `PUT` | `/user/me/password` | Yes | Change password |
-| `GET` | `/users/public` | Yes | Browse classmates (filter: `college`, `branch`, `year`) |
+| `DELETE` | `/user/me` | Yes | Delete account |
 
 ### Semesters
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/semesters` | Yes | List all semesters |
 | `POST` | `/semesters` | Yes | Create — body: `{ label, shortName?, current? }` |
-| `GET` | `/semesters/{id}` | Yes | Get single semester |
 | `PUT` | `/semesters/{id}` | Yes | Update |
+| `POST` | `/semesters/{id}/current` | Yes | Mark as current semester |
 | `DELETE` | `/semesters/{id}` | Yes | Delete |
-| `PUT` | `/semesters/{id}/share` | Yes | Enable / disable public share token |
+| `POST` | `/semesters/{id}/share` | Yes | Enable public share token |
+| `DELETE` | `/semesters/{id}/share` | Yes | Disable public share token |
 
 ### Courses
 | Method | Path | Auth | Description |
@@ -249,6 +252,7 @@ All paths are relative to `/api`. Protected endpoints require `Authorization: Be
 | `PUT` | `/resources/{id}` | Yes | Update |
 | `DELETE` | `/resources/{id}` | Yes | Delete |
 | `POST` | `/upload` | Yes | Upload PDF (multipart `file`, max 25 MB) → Cloudinary URL |
+| `POST` | `/upload/image` | Yes | Upload image (multipart `file`) → Cloudinary URL |
 
 ### Attendance
 | Method | Path | Auth | Description |
@@ -262,6 +266,7 @@ All paths are relative to `/api`. Protected endpoints require `Authorization: Be
 |--------|------|------|-------------|
 | `GET` | `/semesters/{id}/slots` | Yes | List timetable slots |
 | `POST` | `/semesters/{id}/slots` | Yes | Create slot |
+| `PUT` | `/slots/{id}` | Yes | Update slot |
 | `DELETE` | `/slots/{id}` | Yes | Delete slot |
 
 ### Dashboard & Share
