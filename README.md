@@ -366,3 +366,12 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
 The host nginx at `/etc/nginx/sites-enabled/studspace` proxies `https://yourdomain.com` → `http://localhost:80` and passes `X-Forwarded-Proto: https` so the backend generates correct OAuth redirect URIs. Set `client_max_body_size 30M` in the host nginx config to allow PDF uploads.
+
+---
+
+## License & Copyright
+
+© 2026 Shane Christian. All rights reserved.
+
+This project and its source code are the intellectual property of the author. No part may be reproduced, distributed, or used without the author's permission.
+
