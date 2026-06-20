@@ -19,9 +19,6 @@ PROGRESS.md
 # Generated files
 CODEBASE.md
 
-# JS comparison folder (not part of the repo)
-FrontendJS/
-
 # Dev tooling scripts — not part of the app
 benchmark.mjs
 seed.mjs
