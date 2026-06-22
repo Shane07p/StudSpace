@@ -38,9 +38,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         User user = userService.findOrCreateGoogleUser(email, name, googleSub);
         String jwt = jwtUtil.generateToken(user.getId());
 
+        // Pass the JWT in the URL fragment, not a query param: fragments are never sent to
+        // the server (no access logs) nor leaked via the Referer header.
         String redirectUrl = UriComponentsBuilder
                 .fromUriString(frontendUrl + "/dashboard.html")
-                .queryParam("token", jwt)
+                .fragment("token=" + jwt)
                 .build().toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);

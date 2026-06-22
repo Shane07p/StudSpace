@@ -12,8 +12,6 @@
     const _t = localStorage.getItem('ss-theme');
     if (_t === 'dark' || (!_t && matchMedia('(prefers-color-scheme: dark)').matches))
       document.documentElement.classList.add('dark');
-    const _a = localStorage.getItem('ss-accent');
-    if (_a) document.documentElement.style.setProperty('--accent', _a);
   </script>
 </head>
 <body>

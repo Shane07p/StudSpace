@@ -9,12 +9,11 @@ const stored = localStorage.getItem('ss-theme');
 if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
   document.documentElement.classList.add('dark');
 }
-const accent = localStorage.getItem('ss-accent');
-if (accent) document.documentElement.style.setProperty('--accent', accent);
 
-// OAuth token injected via redirect query param
-const urlParams = new URLSearchParams(window.location.search);
-const oauthToken = urlParams.get('token');
+// OAuth token injected via redirect URL fragment (kept out of server logs / Referer);
+// query-param fallback covers redirects issued before this change.
+const hashParams = new URLSearchParams(window.location.hash.slice(1));
+const oauthToken = hashParams.get('token') || new URLSearchParams(window.location.search).get('token');
 if (oauthToken) {
   API.setToken(oauthToken);
   window.history.replaceState({}, document.title, window.location.pathname);

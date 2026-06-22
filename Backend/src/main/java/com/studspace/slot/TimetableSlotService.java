@@ -1,5 +1,6 @@
 package com.studspace.slot;
 
+import com.studspace.common.BadRequestException;
 import com.studspace.common.ForbiddenException;
 import com.studspace.common.NotFoundException;
 import com.studspace.course.Course;
@@ -32,8 +33,8 @@ public class TimetableSlotService {
     @Transactional
     public TimetableSlotDto create(UUID semId, UUID userId, CreateSlotRequest req) {
         Semester sem = getSemesterOwned(semId, userId);
-        Course course = req.getCourseId() != null
-                ? courseRepository.findById(req.getCourseId()).orElse(null) : null;
+        Course course = resolveCourse(req.getCourseId(), sem);
+        assertNoOverlap(sem, req.getDay(), req.getStart(), req.getEnd(), null);
         TimetableSlot slot = TimetableSlot.builder()
                 .semester(sem)
                 .course(course)
@@ -48,8 +49,8 @@ public class TimetableSlotService {
     @Transactional
     public TimetableSlotDto update(UUID slotId, UUID userId, CreateSlotRequest req) {
         TimetableSlot slot = getSlotOwned(slotId, userId);
-        Course course = req.getCourseId() != null
-                ? courseRepository.findById(req.getCourseId()).orElse(null) : null;
+        Course course = resolveCourse(req.getCourseId(), slot.getSemester());
+        assertNoOverlap(slot.getSemester(), req.getDay(), req.getStart(), req.getEnd(), slot.getId());
         slot.setDay(req.getDay());
         slot.setStartTime(req.getStart());
         slot.setEndTime(req.getEnd());
@@ -62,6 +63,29 @@ public class TimetableSlotService {
     public void delete(UUID slotId, UUID userId) {
         getSlotOwned(slotId, userId);
         slotRepository.deleteById(slotId);
+    }
+
+    // A slot's course must belong to the same semester, otherwise a user could attach
+    // one of their courses from an unrelated semester by passing its id directly.
+    private Course resolveCourse(UUID courseId, Semester sem) {
+        if (courseId == null) return null;
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new NotFoundException("Course not found"));
+        if (!course.getSemester().getId().equals(sem.getId())) {
+            throw new BadRequestException("Course does not belong to this semester");
+        }
+        return course;
+    }
+
+    // Reject a slot whose time range intersects an existing slot on the same day in this semester
+    // (also blocks exact duplicates). Times are zero-padded "HH:MM", so string comparison is chronological.
+    private void assertNoOverlap(Semester sem, String day, String start, String end, UUID excludeSlotId) {
+        boolean overlaps = slotRepository.findBySemesterIdAndDay(sem.getId(), day).stream()
+                .filter(s -> excludeSlotId == null || !s.getId().equals(excludeSlotId))
+                .anyMatch(s -> s.getStartTime().compareTo(end) < 0 && start.compareTo(s.getEndTime()) < 0);
+        if (overlaps) {
+            throw new BadRequestException("This time overlaps an existing class on " + day + ".");
+        }
     }
 
     private Semester getSemesterOwned(UUID semId, UUID userId) {

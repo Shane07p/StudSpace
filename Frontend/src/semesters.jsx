@@ -88,10 +88,13 @@ function TimeSelect({ value, onChange, times }) {
 
   React.useEffect(() => {
     if (!open) return;
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target) && !listRef.current?.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('scroll', () => setOpen(false), true);
-    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('scroll', () => setOpen(false), true); };
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target) && !listRef.current?.contains(e.target)) setOpen(false); };
+    // Close on page scroll (menu is position:fixed), but not when scrolling inside the menu itself
+    // — opening auto-scrolls the list to the selected time, which would otherwise close it instantly.
+    const onScroll = (e) => { if (!listRef.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('scroll', onScroll, true);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('scroll', onScroll, true); };
   }, [open]);
 
   React.useEffect(() => {
@@ -150,10 +153,11 @@ function CourseSelect({ value, onChange, courses, emptyLabel = "— Pick a cours
 
   React.useEffect(() => {
     if (!open) return;
-    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('scroll', () => setOpen(false), true);
-    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('scroll', () => setOpen(false), true); };
+    const onDown = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const onScroll = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('scroll', onScroll, true);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('scroll', onScroll, true); };
   }, [open]);
 
   const selected = courses.find((c) => c.id === value);

@@ -30,6 +30,10 @@ async function request(method, path, body) {
     throw new Error(json.message || 'Invalid username or password');
   }
 
+  if (res.status === 429) {
+    throw new Error(json.error || json.message || 'Too many attempts — please wait 15 minutes and try again.');
+  }
+
   if (!json.success) throw new Error(json.message || 'Request failed');
 
   return json.data;

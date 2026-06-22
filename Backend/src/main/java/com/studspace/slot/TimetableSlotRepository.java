@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface TimetableSlotRepository extends JpaRepository<TimetableSlot, UUID> {
     List<TimetableSlot> findBySemesterIdOrderByDayAscStartTimeAsc(UUID semesterId);
+
+    List<TimetableSlot> findBySemesterIdAndDay(UUID semesterId, String day);
 }
