@@ -17,7 +17,6 @@ public class UserProfileDto {
     private String branch;
     private Integer year;
     private String bio;
-    private boolean profilePublic;
     private boolean hasPassword;
     private String profilePhoto;
     private String coverPhoto;

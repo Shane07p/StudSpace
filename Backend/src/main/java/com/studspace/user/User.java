@@ -49,9 +49,6 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String bio;
 
-    @Column(name = "is_profile_public")
-    private boolean profilePublic = false;
-
     @Column(name = "profile_photo", columnDefinition = "TEXT")
     private String profilePhoto;
 

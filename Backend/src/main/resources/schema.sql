@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS users (
     branch        VARCHAR(50),
     year          INT,
     bio           TEXT,
-    is_profile_public BOOLEAN DEFAULT false,
     profile_photo TEXT,
     cover_photo   TEXT,
     created_at    TIMESTAMP DEFAULT now(),
@@ -96,5 +95,4 @@ CREATE INDEX IF NOT EXISTS idx_courses_semester_id  ON courses(semester_id);
 CREATE INDEX IF NOT EXISTS idx_resources_course_id  ON resources(course_id);
 CREATE INDEX IF NOT EXISTS idx_attendance_course_id ON attendance_records(course_id);
 CREATE INDEX IF NOT EXISTS idx_semesters_share_token ON semesters(share_token);
-CREATE INDEX IF NOT EXISTS idx_users_public         ON users(is_profile_public) WHERE is_profile_public = true;
 CREATE INDEX IF NOT EXISTS idx_slots_semester_id    ON timetable_slots(semester_id);
