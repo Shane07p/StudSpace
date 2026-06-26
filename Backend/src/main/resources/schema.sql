@@ -51,7 +51,6 @@ CREATE TABLE IF NOT EXISTS courses (
     name         VARCHAR(200) NOT NULL,
     instructor   VARCHAR(100),
     credits      INT         DEFAULT 3,
-    total_classes INT        DEFAULT 0,
     created_at   TIMESTAMP   DEFAULT now()
 );
 

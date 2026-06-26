@@ -37,10 +37,6 @@ public class Course {
     @Builder.Default
     private int credits = 3;
 
-    @Column(name = "total_classes")
-    @Builder.Default
-    private int totalClasses = 0;
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

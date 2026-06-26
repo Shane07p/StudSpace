@@ -39,7 +39,7 @@ courses ──0..1──▶ timetable_slots      (course_id, ON DELETE SET NULL)
 
 **semesters** — `id`, `user_id` →users, `label`, `short_name`, `is_current`, `share_token` (unique, null = not shared), `created_at`
 
-**courses** — `id`, `semester_id` →semesters, `code`, `name`, `instructor`, `credits` (default 3), `total_classes`, `created_at`
+**courses** — `id`, `semester_id` →semesters, `code`, `name`, `instructor`, `credits` (default 3), `created_at`
 
 **resources** — `id`, `course_id` →courses (nullable), `semester_id` →semesters (nullable), `type` (`PYQ`/`NOTES`/`PLAYLIST`/`LINK`/`OTHER`), `title`, `url`, `notes`, `created_at`
 
