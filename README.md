@@ -4,6 +4,18 @@ A full-stack academic workspace for university students — organize semesters, 
 
 ---
 
+## Table of Contents
+
+- [Architecture](docs/architecture.md)
+- [Backend](docs/backend.md)
+- [Frontend](docs/frontend.md)
+- [Database](docs/database.md)
+- [API Reference](docs/api.md)
+- [Deployment & Setup](docs/deployment.md)
+- [ER Diagram (PDF)](docs/studpspace_er_diagram.pdf)
+
+---
+
 ## Features
 
 - **Dashboard** — At-a-glance stats (courses, attendance %, resources, credits) with per-course cards
@@ -46,18 +58,6 @@ docker compose up -d          # app on http://localhost
 ```
 
 The first build takes a few minutes. Full setup, environment variables, and the Windows/BuildKit note are in [docs/deployment.md](docs/deployment.md).
-
----
-
-## Table of Contents
-
-- [Architecture](docs/architecture.md)
-- [Backend](docs/backend.md)
-- [Frontend](docs/frontend.md)
-- [Database](docs/database.md)
-- [API Reference](docs/api.md)
-- [Deployment & Setup](docs/deployment.md)
-- [ER Diagram (PDF)](docs/studpspace_er_diagram.pdf)
 
 ---
 
