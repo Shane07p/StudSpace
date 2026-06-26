@@ -49,16 +49,15 @@ The first build takes a few minutes. Full setup, environment variables, and the 
 
 ---
 
-## Documentation
+## Table of Contents
 
-| Doc | Contents |
-|-----|----------|
-| [docs/architecture.md](docs/architecture.md) | System overview, request flow, OAuth flow, design decisions, benchmarks |
-| [docs/backend.md](docs/backend.md) | Spring Boot structure, request lifecycle, ownership pattern, auth |
-| [docs/frontend.md](docs/frontend.md) | Vite/React dashboard + static pages, the `api.js` bridge, client state |
-| [docs/database.md](docs/database.md) | Tables, relationships (ER), columns, indexes |
-| [docs/api.md](docs/api.md) | Full 38-endpoint REST reference |
-| [docs/deployment.md](docs/deployment.md) | Prerequisites, env vars, Google OAuth setup, Docker, production, local dev |
+- [Architecture](docs/architecture.md)
+- [Backend](docs/backend.md)
+- [Frontend](docs/frontend.md)
+- [Database](docs/database.md)
+- [API Reference](docs/api.md)
+- [Deployment & Setup](docs/deployment.md)
+- [ER Diagram (PDF)](docs/studpspace_er_diagram.pdf)
 
 ---
 
