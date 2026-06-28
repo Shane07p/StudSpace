@@ -65,7 +65,18 @@ Each feature has its equivalent (`getOwned`, `getSemesterOwned`, `getSlotOwned`)
 
 ## Errors
 
-Exceptions in `common` — `NotFoundException` (404), `ForbiddenException` (403), `BadRequestException` (400), `ConflictException` (409) — are thrown from services and translated to clean JSON by `GlobalExceptionHandler`. No stack traces leak to the client.
+Exceptions thrown from services are translated to clean JSON by `GlobalExceptionHandler` (`@RestControllerAdvice`) and wrapped in `ApiResponse.fail(code, message)`. No stack traces leak to the client. The custom ones live in `common`.
+
+| Exception | HTTP | Error code | When it fires |
+|-----------|------|-----------|---------------|
+| `NotFoundException` | 404 | `RESOURCE_NOT_FOUND` | id doesn't exist |
+| `ForbiddenException` | 403 | `FORBIDDEN` | resource not owned by caller (`getOwned`) |
+| `BadRequestException` | 400 | `BAD_REQUEST` | bad input / business rule (slot overlap, invalid PDF) |
+| `ConflictException` | 409 | `CONFLICT` | duplicate username/email on register |
+| `MethodArgumentNotValidException` | 400 | `VALIDATION_ERROR` | `@Valid` DTO check fails |
+| `BadCredentialsException` | 401 | `INVALID_CREDENTIALS` | wrong login password |
+| `AccessDeniedException` | 403 | `FORBIDDEN` | Spring Security blocks the request |
+| `Exception` (fallback) | 500 | `INTERNAL_ERROR` | anything unexpected (generic message) |
 
 ## Auth
 
