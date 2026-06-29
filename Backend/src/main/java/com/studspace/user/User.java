@@ -55,7 +55,7 @@ public class User {
     @Column(name = "cover_photo", columnDefinition = "TEXT")
     private String coverPhoto;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("displayOrder ASC")
     @Builder.Default
     private List<UserHandle> handles = new ArrayList<>();
