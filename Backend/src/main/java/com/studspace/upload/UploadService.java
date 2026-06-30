@@ -32,7 +32,8 @@ public class UploadService {
 
     private void checkConfigured() {
         if (cloudinaryUrl == null || cloudinaryUrl.isBlank()) {
-            throw new BadRequestException("File upload is not configured. Add CLOUDINARY_URL to your .env file.");
+            log.warn("Upload attempted but CLOUDINARY_URL is not configured");
+            throw new BadRequestException("File uploads are currently unavailable. Please try again later.");
         }
     }
 
@@ -62,7 +63,8 @@ public class UploadService {
             log.info("Upload success: {}", url);
             return url;
         } catch (Exception e) {
-            throw new BadRequestException("Upload failed: " + e.getMessage());
+            log.error("PDF upload to Cloudinary failed", e);
+            throw new BadRequestException("Upload failed. Please try again.");
         }
     }
 
@@ -91,7 +93,8 @@ public class UploadService {
             log.info("Image upload success: {}", url);
             return url;
         } catch (Exception e) {
-            throw new BadRequestException("Image upload failed: " + e.getMessage());
+            log.error("Image upload to Cloudinary failed", e);
+            throw new BadRequestException("Image upload failed. Please try again.");
         }
     }
 
