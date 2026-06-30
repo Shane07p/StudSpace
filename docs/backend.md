@@ -76,13 +76,14 @@ Exceptions thrown from services are translated to clean JSON by `GlobalException
 | `MethodArgumentNotValidException` | 400 | `VALIDATION_ERROR` | `@Valid` DTO check fails |
 | `BadCredentialsException` | 401 | `INVALID_CREDENTIALS` | wrong login password |
 | `AccessDeniedException` | 403 | `FORBIDDEN` | Spring Security blocks the request |
+| `TooManyRequestsException` | 429 | `RATE_LIMITED` | too many failed logins (per-IP limit in `AuthService`) |
 | `Exception` (fallback) | 500 | `INTERNAL_ERROR` | anything unexpected (generic message) |
 
 ## Auth
 
 - **JWT** — `JwtUtil` signs an HMAC-SHA token whose subject is the user id (7-day expiry). `JwtFilter` validates the `Bearer` token on every request and loads the user.
 - **Login / register** — `AuthController` → `AuthService`; passwords hashed with BCrypt; minimum 8 chars (`RegisterRequest`, `ChangePasswordRequest`).
-- **Rate limiting** — `RateLimitFilter` (Bucket4j) caps `/api/auth/login` and `/register` at 5 requests / 15 min / IP. The client IP is the right-most public entry of `X-Forwarded-For` (our nginx hops are trailing).
+- **Rate limiting** — Bucket4j, 5 / 15 min / IP, keyed on the right-most public entry of `X-Forwarded-For` (shared `ClientIp` helper; nginx hops are trailing). **Login** is failure-based: `AuthService` counts only failed attempts and clears the IP's counter on a successful login (429 → `TooManyRequestsException`). **Register** uses `RateLimitFilter` (register-only) and counts every attempt, to block signup spam.
 - **Google OAuth2** — `OAuth2SuccessHandler` issues the JWT and redirects with a `#token=` fragment; OAuth state is stored in a short-lived cookie (`CookieOAuth2AuthorizationRequestRepository`).
 
 ## Other notable services

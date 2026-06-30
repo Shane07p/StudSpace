@@ -55,6 +55,8 @@ public class User {
     @Column(name = "cover_photo", columnDefinition = "TEXT")
     private String coverPhoto;
 
+    // Updated via handleRepository (delete-all + reinsert), never by mutating this list —
+    // removing an item here will NOT delete its row (orphanRemoval was intentionally dropped).
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("displayOrder ASC")
     @Builder.Default

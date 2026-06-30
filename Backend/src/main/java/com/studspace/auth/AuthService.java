@@ -51,6 +51,7 @@ public class AuthService {
             throw new BadCredentialsException("Incorrect username or password");
         }
         if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
+            failures.tryConsume(1);
             throw new BadCredentialsException("This account uses Google sign-in. Please use 'Continue with Google'.");
         }
         if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
