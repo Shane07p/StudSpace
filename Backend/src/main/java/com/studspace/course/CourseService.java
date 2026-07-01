@@ -101,14 +101,8 @@ public class CourseService {
         int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
         int absent = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.ABSENT).count();
         int cancelled = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.CANCELLED).count();
-        int total = records.size();
-        int nonCancelled = total - cancelled;
-
+        int nonCancelled = records.size() - cancelled;
         double pct = nonCancelled == 0 ? 0.0 : (present * 100.0) / nonCancelled;
-        int needed = 0;
-        if (pct < 75 && nonCancelled > 0) {
-            needed = (int) Math.ceil((0.75 * nonCancelled - present) / 0.25);
-        }
 
         CourseDto dto = new CourseDto();
         dto.setId(c.getId());
@@ -117,12 +111,9 @@ public class CourseService {
         dto.setName(c.getName());
         dto.setInstructor(c.getInstructor());
         dto.setCredits(c.getCredits());
-        dto.setTotalClasses(total);
         dto.setPresentCount(present);
         dto.setAbsentCount(absent);
-        dto.setCancelledCount(cancelled);
         dto.setAttendancePercentage(Math.round(pct * 10.0) / 10.0);
-        dto.setClassesNeededFor75(Math.max(0, needed));
         dto.setResourceCount(resourceCount);
         return dto;
     }

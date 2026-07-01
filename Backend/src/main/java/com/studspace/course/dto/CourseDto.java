@@ -12,11 +12,8 @@ public class CourseDto {
     private String name;
     private String instructor;
     private int credits;
-    private int totalClasses;
     private int presentCount;
     private int absentCount;
-    private int cancelledCount;
     private double attendancePercentage;
-    private int classesNeededFor75;
     private int resourceCount;
 }
