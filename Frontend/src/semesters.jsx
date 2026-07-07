@@ -1,6 +1,7 @@
 // semesters.jsx — Semester / Course view (API-integrated)
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import API from './api';
 import { Icon, Card, Badge, Button, Tabs, Sheet, EmptyState, ErrorState, Skeleton, RECENT_ICON, RECENT_TONE, ConfirmDialog } from './lib';
 import FullCalendar from '@fullcalendar/react';
@@ -117,7 +118,7 @@ function TimeSelect({ value, onChange, times }) {
         <Icon name="ChevronDown" size={13} className={`text-neutral-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {open && dropRect && (
+      {open && dropRect && createPortal(
         <div
           ref={listRef}
           style={{ position: 'fixed', top: dropRect.bottom + 4, left: dropRect.left, width: dropRect.width, zIndex: 9999, maxHeight: 192, overflowY: 'auto' }}
@@ -136,7 +137,8 @@ function TimeSelect({ value, onChange, times }) {
               }`}
             >{t}</button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -145,6 +147,7 @@ function CourseSelect({ value, onChange, courses, emptyLabel = "— Pick a cours
   const [open, setOpen] = React.useState(false);
   const [dropRect, setDropRect] = React.useState(null);
   const ref = React.useRef(null);
+  const listRef = React.useRef(null);
 
   const toggle = () => {
     if (!open && ref.current) setDropRect(ref.current.getBoundingClientRect());
@@ -153,8 +156,8 @@ function CourseSelect({ value, onChange, courses, emptyLabel = "— Pick a cours
 
   React.useEffect(() => {
     if (!open) return;
-    const onDown = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
-    const onScroll = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const onDown = (e) => { if (!ref.current?.contains(e.target) && !listRef.current?.contains(e.target)) setOpen(false); };
+    const onScroll = (e) => { if (!listRef.current?.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('scroll', onScroll, true);
     return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('scroll', onScroll, true); };
@@ -181,8 +184,9 @@ function CourseSelect({ value, onChange, courses, emptyLabel = "— Pick a cours
         <Icon name="ChevronDown" size={13} className={`text-neutral-400 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {open && dropRect && (
+      {open && dropRect && createPortal(
         <div
+          ref={listRef}
           style={{ position: 'fixed', top: dropRect.bottom + 4, left: dropRect.left, width: dropRect.width, zIndex: 9999, maxHeight: 224, overflowY: 'auto' }}
           className="rounded-md border border-neutral-200/80 bg-white shadow-lg dark:border-white/[0.08] dark:bg-neutral-900 py-1"
         >
@@ -195,7 +199,8 @@ function CourseSelect({ value, onChange, courses, emptyLabel = "— Pick a cours
               {c.name}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -517,7 +522,7 @@ function ResourceNotesSheet({ open, onClose, resource, onSave }) {
   );
 }
 
-function ResourceRow({ r, onDelete }) {
+function ResourceRow({ r, onDelete, onAskAi }) {
   const key = toTypeKey(r.type);
   const iconName = RECENT_ICON[key] || "Paperclip";
   const tone = RECENT_TONE[key] || "neutral";
@@ -570,6 +575,13 @@ function ResourceRow({ r, onDelete }) {
           </div>
           <div className="hidden sm:block text-[11px] text-neutral-400 dark:text-neutral-500 tabular-nums">{when}</div>
           <div className="flex items-center justify-end gap-1">
+            <button
+              onClick={(e) => { e.stopPropagation(); onAskAi?.(r); }}
+              className="grid h-6 w-6 place-items-center rounded-md text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/[0.06] hover:text-[var(--accent)] transition-all opacity-0 group-hover:opacity-100"
+              title="Ask AI about this"
+            >
+              <Icon name="Sparkles" size={12} />
+            </button>
             <button
               onClick={(e) => { e.stopPropagation(); setNotesOpen(true); }}
               className={`grid h-6 w-6 place-items-center rounded-md transition-all ${
@@ -721,7 +733,7 @@ function CourseAttTab({ courseId }) {
   );
 }
 
-function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey }) {
+function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey, onAskAi }) {
   const [tab, setTab] = React.useState("resources");
   const [resources, setResources] = React.useState(null);
   const [loadingRes, setLoadingRes] = React.useState(false);
@@ -854,7 +866,7 @@ function CourseRow({ c, expanded, onToggle, onAddResource, onDeleted, refreshKey
                     <span /><span>Type</span><span>Title</span><span className="hidden sm:block">Added</span><span className="hidden sm:block" />
                   </div>
                   {resources.map((r) => (
-                    <ResourceRow key={r.id} r={r} onDelete={handleResourceDeleted} />
+                    <ResourceRow key={r.id} r={r} onDelete={handleResourceDeleted} onAskAi={onAskAi} />
                   ))}
                 </div>
               )
@@ -1116,7 +1128,7 @@ function SemSummaryStat({ label, value }) {
   );
 }
 
-function SemesterPage() {
+function SemesterPage({ onAskAi }) {
   const [semesters, setSemesters] = React.useState([]);
   const [semId, setSemId] = React.useState(null);
   const [courses, setCourses] = React.useState([]);
@@ -1176,36 +1188,7 @@ function SemesterPage() {
 
   const [refreshKey, setRefreshKey] = React.useState(0);
 
-  const [chatOpen, setChatOpen] = React.useState(false);
-  const [chatHistory, setChatHistory] = React.useState([]);
-  const [chatInput, setChatInput] = React.useState("");
-  const [chatLoading, setChatLoading] = React.useState(false);
-  const chatBottomRef = React.useRef(null);
-
-  React.useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistory, chatLoading]);
-
-  const buildChatContext = () => ({
-    semesterLabel: sem?.label,
-    courses: courses.map((c) => ({ name: c.name, code: c.code, credits: c.credits })),
-  });
-
-  const sendChat = async () => {
-    const msg = chatInput.trim();
-    if (!msg || chatLoading) return;
-    setChatInput("");
-    setChatHistory((h) => [...h, { role: "user", content: msg }]);
-    setChatLoading(true);
-    try {
-      const res = await API.ai.chat(msg, buildChatContext());
-      setChatHistory((h) => [...h, { role: "assistant", content: res.reply }]);
-    } catch {
-      setChatHistory((h) => [...h, { role: "assistant", content: "Sorry, I couldn't connect to the AI. Please try again." }]);
-    } finally {
-      setChatLoading(false);
-    }
-  };
+  const askAi = (r) => onAskAi?.(r);
 
   const handleResourceSaved = (courseId, resource) => {
     if (courseId) {
@@ -1336,7 +1319,7 @@ function SemesterPage() {
             </Button>
           )}
           {courses.length > 0 && (
-            <Button variant="outline" onClick={() => setChatOpen(true)}>
+            <Button variant="outline" onClick={() => onAskAi?.(null)}>
               <Icon name="BotMessageSquare" size={12} /> AI Chat
             </Button>
           )}
@@ -1422,7 +1405,7 @@ function SemesterPage() {
               </div>
               <div className="flex flex-col gap-0.5 pb-1">
                 {uncategorized.map((r) => (
-                  <ResourceRow key={r.id} r={r} onDelete={(id) => setUncategorized((prev) => prev.filter((x) => x.id !== id))} />
+                  <ResourceRow key={r.id} r={r} onDelete={(id) => setUncategorized((prev) => prev.filter((x) => x.id !== id))} onAskAi={askAi} />
                 ))}
               </div>
             </div>
@@ -1474,6 +1457,7 @@ function SemesterPage() {
               onAddResource={openAddResource}
               onDeleted={handleCourseDeleted}
               refreshKey={refreshKey}
+              onAskAi={askAi}
             />
           ))
         )}
@@ -1501,57 +1485,6 @@ function SemesterPage() {
       <AddSemesterSheet open={addSemOpen} onClose={() => setAddSemOpen(false)} onSaved={handleSemCreated} />
       <AddCourseSheet open={addCourseOpen} onClose={() => setAddCourseOpen(false)} semesterId={semId} onSaved={handleCourseCreated} />
 
-      {chatOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-neutral-900/60 dark:bg-black/70 backdrop-blur-[2px]" onClick={() => setChatOpen(false)} />
-          <div className="relative z-10 flex flex-col w-full max-w-lg bg-white dark:bg-neutral-950 rounded-xl shadow-2xl border border-neutral-200/80 dark:border-white/[0.06]" style={{ height: "80vh" }}>
-            <div className="flex h-14 shrink-0 items-center justify-between border-b border-neutral-200/80 dark:border-white/[0.06] px-5">
-              <div className="flex items-center gap-2">
-                <Icon name="BotMessageSquare" size={15} className="text-[var(--accent)]" />
-                <h2 className="text-[14px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">Study Assistant</h2>
-              </div>
-              <button onClick={() => setChatOpen(false)} className="grid h-7 w-7 place-items-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-white/[0.06]">
-                <Icon name="X" size={14} />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 p-4">
-              {chatHistory.length === 0 && (
-                <p className="text-[12px] text-neutral-400 dark:text-neutral-500 text-center mt-8 px-4">
-                  Ask me anything about your {sem?.label || "semester"} courses — concepts, study tips, or resources.
-                </p>
-              )}
-              {chatHistory.map((m, i) => (
-                <div
-                  key={i}
-                  className={`rounded-xl px-3 py-2 text-[12.5px] leading-relaxed max-w-[85%] whitespace-pre-wrap ${
-                    m.role === "user"
-                      ? "self-end bg-[var(--accent)] text-white"
-                      : "self-start bg-neutral-100 dark:bg-white/[0.06] text-neutral-800 dark:text-neutral-200"
-                  }`}
-                >{m.content}</div>
-              ))}
-              {chatLoading && (
-                <div className="self-start bg-neutral-100 dark:bg-white/[0.06] rounded-xl px-3 py-2.5">
-                  <Icon name="Loader2" size={14} className="animate-spin text-neutral-400" />
-                </div>
-              )}
-              <div ref={chatBottomRef} />
-            </div>
-            <div className="shrink-0 flex gap-2 border-t border-neutral-200/80 dark:border-white/[0.06] p-4">
-              <input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
-                placeholder="Ask about your courses…"
-                className="flex-1 rounded-md border border-neutral-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-3 py-2 text-[12.5px] placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-[var(--accent)] dark:text-neutral-100"
-              />
-              <Button onClick={sendChat} disabled={chatLoading || !chatInput.trim()}>
-                <Icon name="Send" size={12} />
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
       <ConfirmDialog
         open={deleteSemOpen}
         title={sem ? `Delete "${sem.label}"?` : "Delete semester?"}

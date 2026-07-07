@@ -9,6 +9,7 @@ import SemesterPage from './semesters.jsx';
 import AttendancePage from './attendance.jsx';
 import CalculatorPage from './calculator.jsx';
 import ProfilePage from './profile.jsx';
+import AssistantPage from './assistant.jsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Error Boundary
@@ -164,6 +165,7 @@ const CRUMB = {
   semesters:  { icon: "BookOpen",        label: "Semesters" },
   attendance: { icon: "CalendarCheck2",  label: "Attendance" },
   calculator: { icon: "Calculator",      label: "Grades" },
+  assistant:  { icon: "BotMessageSquare", label: "Assistant" },
   profile:    { icon: "User",            label: "Profile" },
 };
 
@@ -300,7 +302,7 @@ const TWEAK_DEFAULTS = {
   sidebarCollapsed: localStorage.getItem("ss-sidebar") === "1",
 };
 
-const VALID_TABS = ["dashboard", "semesters", "attendance", "calculator", "profile"];
+const VALID_TABS = ["dashboard", "semesters", "attendance", "calculator", "assistant", "profile"];
 
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
@@ -311,6 +313,7 @@ function App() {
   const [collapsed, setCollapsed] = React.useState(TWEAK_DEFAULTS.sidebarCollapsed);
   const [user, setUser] = React.useState(API.getCachedUser());
   const [courses, setCourses] = React.useState([]);
+  const [pendingAiResource, setPendingAiResource] = React.useState(null);
   const loaded = useLoaded(750);
 
   React.useLayoutEffect(() => {
@@ -351,6 +354,8 @@ function App() {
     window.location.hash = id;
   };
 
+  const askAi = (resource) => { setPendingAiResource(resource || null); goto("assistant"); };
+
   return (
     <div className="flex h-screen w-screen antialiased" style={{ fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif", backgroundColor: "var(--bg-base)", color: "var(--text-primary)" }}>
       <Sidebar active={active} onNav={goto} collapsed={collapsed} onToggle={() => setCollapsed(v => { const next = !v; localStorage.setItem("ss-sidebar", next ? "1" : ""); return next; })} user={user} />
@@ -360,9 +365,10 @@ function App() {
         <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
           <PageErrorBoundary key={active}>
             {active === "dashboard"  && <Dashboard loaded={loaded} onNav={goto} user={user} />}
-            {active === "semesters"  && <SemesterPage />}
+            {active === "semesters"  && <SemesterPage onAskAi={askAi} />}
             {active === "attendance" && <AttendancePage />}
             {active === "calculator" && <CalculatorPage />}
+            {active === "assistant"  && <AssistantPage pendingResource={pendingAiResource} onConsumePending={() => setPendingAiResource(null)} />}
             {active === "profile"    && <ProfilePage user={user} onUserUpdate={setUser} />}
           </PageErrorBoundary>
         </main>

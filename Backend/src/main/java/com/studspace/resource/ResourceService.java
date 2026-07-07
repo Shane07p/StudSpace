@@ -29,6 +29,10 @@ public class ResourceService {
                 .stream().map(this::toDto).toList();
     }
 
+    public ResourceDto getOne(UUID resourceId, UUID userId) {
+        return toDto(getOwned(resourceId, userId));
+    }
+
     public List<ResourceDto> getUncategorized(UUID semId, UUID userId) {
         getSemesterOwned(semId, userId);
         return resourceRepository.findBySemesterIdAndCourseIsNullOrderByCreatedAtDesc(semId)

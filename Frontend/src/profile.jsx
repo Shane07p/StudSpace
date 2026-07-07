@@ -1,6 +1,7 @@
 // profile.jsx — Profile page (API-integrated)
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import API from './api';
 import { Icon, Card, Badge, Button, Tabs, Sheet, Skeleton, ErrorState, attTone } from './lib';
 
@@ -53,12 +54,14 @@ function CollegeSelect({ value, onChange, inputCls }) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [custom, setCustom] = React.useState(() => !!value && !INDIAN_COLLEGES.includes(value));
+  const [dropRect, setDropRect] = React.useState(null);
   const ref = React.useRef(null);
   const searchRef = React.useRef(null);
+  const panelRef = React.useRef(null);
 
   React.useEffect(() => {
     if (!open) return;
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const handler = (e) => { if (!ref.current?.contains(e.target) && !panelRef.current?.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
@@ -93,8 +96,6 @@ function CollegeSelect({ value, onChange, inputCls }) {
     );
   }
 
-  const [dropRect, setDropRect] = React.useState(null);
-
   const toggle = () => {
     if (!open && ref.current) setDropRect(ref.current.getBoundingClientRect());
     setOpen(o => !o);
@@ -110,8 +111,8 @@ function CollegeSelect({ value, onChange, inputCls }) {
         <span className="truncate">{value || "Select college…"}</span>
         <Icon name="ChevronDown" size={13} className={`shrink-0 text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && dropRect && (
-        <div style={{ position: 'fixed', top: dropRect.bottom + 4, left: dropRect.left, width: dropRect.width, zIndex: 9999 }} className="rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
+      {open && dropRect && createPortal(
+        <div ref={panelRef} style={{ position: 'fixed', top: dropRect.bottom + 4, left: dropRect.left, width: dropRect.width, zIndex: 9999 }} className="rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
           <div className="p-2 border-b border-neutral-100 dark:border-white/[0.06]">
             <div className="relative">
               <Icon name="Search" size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
@@ -134,7 +135,8 @@ function CollegeSelect({ value, onChange, inputCls }) {
               >{c}</button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as LucideIcons from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -8,6 +8,7 @@ export const NAV = [
   { id: "semesters",  label: "Semesters",  icon: "BookOpen" },
   { id: "attendance", label: "Attendance", icon: "CalendarCheck2" },
   { id: "calculator", label: "Grades",     icon: "Calculator" },
+  { id: "assistant",  label: "Assistant",  icon: "BotMessageSquare" },
   { id: "profile",    label: "Profile",    icon: "User" },
 ];
 
@@ -174,6 +175,56 @@ export function Sheet({ open, onClose, title, children, width = 420 }) {
         </div>
         <div className="overflow-y-auto" style={{ maxHeight: "calc(90vh - 56px)" }}>{children}</div>
       </div>
+    </div>
+  );
+}
+
+// Custom dropdown — styled to match the app (native <select> can't theme its open list).
+// options: array of { value, label } or plain strings. value/onChange are controlled.
+export function Select({ value, onChange, options, placeholder = "Select…", className = "" }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const opts = options.map((o) => (typeof o === "object" ? o : { value: o, label: o }));
+  const selected = opts.find((o) => o.value === value);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    window.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDoc); window.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  return (
+    <div ref={ref} className={`relative ${className}`}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2 rounded-md border border-neutral-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] px-2.5 py-2 text-left text-[12.5px] dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+      >
+        <span className={`flex-1 truncate ${selected ? "" : "text-neutral-400"}`}>{selected ? selected.label : placeholder}</span>
+        <Icon name="ChevronDown" size={14} className={`shrink-0 text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-md border border-neutral-200/80 dark:border-white/[0.08] bg-white dark:bg-neutral-900 p-1 shadow-lg">
+          {opts.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => { onChange(o.value); setOpen(false); }}
+              className={`flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-left text-[12.5px] transition-colors ${
+                o.value === value
+                  ? "bg-[var(--accent)]/[0.1] text-[var(--accent)] font-medium"
+                  : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-white/[0.06]"
+              }`}
+            >
+              <span className="flex-1 truncate">{o.label}</span>
+              {o.value === value && <Icon name="Check" size={13} className="shrink-0" />}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

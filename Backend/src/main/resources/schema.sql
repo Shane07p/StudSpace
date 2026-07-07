@@ -88,6 +88,25 @@ CREATE TABLE IF NOT EXISTS timetable_slots (
     created_at  TIMESTAMP   DEFAULT now()
 );
 
+-- AI chat conversations
+CREATE TABLE IF NOT EXISTS conversations (
+    id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title       VARCHAR(200),
+    resource_id UUID        REFERENCES resources(id) ON DELETE SET NULL,
+    created_at  TIMESTAMP   DEFAULT now(),
+    updated_at  TIMESTAMP   DEFAULT now()
+);
+
+-- AI chat messages
+CREATE TABLE IF NOT EXISTS messages (
+    id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID        NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+    role            VARCHAR(20) NOT NULL,
+    content         TEXT        NOT NULL,
+    created_at      TIMESTAMP   DEFAULT now()
+);
+
 -- Indexes for common query patterns
 CREATE INDEX IF NOT EXISTS idx_semesters_user_id    ON semesters(user_id);
 CREATE INDEX IF NOT EXISTS idx_courses_semester_id  ON courses(semester_id);
@@ -95,3 +114,5 @@ CREATE INDEX IF NOT EXISTS idx_resources_course_id  ON resources(course_id);
 CREATE INDEX IF NOT EXISTS idx_attendance_course_id ON attendance_records(course_id);
 CREATE INDEX IF NOT EXISTS idx_semesters_share_token ON semesters(share_token);
 CREATE INDEX IF NOT EXISTS idx_slots_semester_id    ON timetable_slots(semester_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_user_id     ON conversations(user_id);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id  ON messages(conversation_id);

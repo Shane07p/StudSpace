@@ -127,8 +127,14 @@ const API = {
   },
 
   ai: {
-    chat: (message, context) =>
-      request('POST', '/ai/chat', { message, context }),
+    chat: (message, resourceId) =>
+      request('POST', '/ai/chat', { message, resourceId }),
+    listConversations: () => request('GET', '/ai/conversations'),
+    getConversation: (id) => request('GET', '/ai/conversations/' + id),
+    createConversation: (data) => request('POST', '/ai/conversations', data),
+    sendMessage: (id, content) => request('POST', '/ai/conversations/' + id + '/messages', { content }),
+    attachResource: (id, resourceId) => request('PUT', '/ai/conversations/' + id + '/resource', { resourceId }),
+    deleteConversation: (id) => request('DELETE', '/ai/conversations/' + id),
   },
 };
 
