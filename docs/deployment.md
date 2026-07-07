@@ -5,7 +5,8 @@
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Engine + Compose)
 - A [Google Cloud Console](https://console.cloud.google.com) OAuth 2.0 Client ID (for Google sign-in)
 - _(Optional)_ [Cloudinary](https://cloudinary.com) account — for PDF/image uploads
-- _(Optional)_ [Groq](https://console.groq.com/keys) API key — for the AI chat assistant
+- _(Optional)_ [Groq](https://console.groq.com/keys) API key — for the AI text assistant
+- _(Optional)_ [Google Gemini](https://aistudio.google.com/apikey) API key — for reading PDF resources in the assistant
 
 ## Run locally (Docker)
 
@@ -37,7 +38,9 @@ docker compose build backend frontend && docker compose up -d --force-recreate b
 | `GOOGLE_CLIENT_ID` | Yes* | OAuth2 Client ID |
 | `GOOGLE_CLIENT_SECRET` | Yes* | OAuth2 Client Secret |
 | `FRONTEND_URL` | Yes | `http://localhost` locally, `https://yourdomain.com` in production |
-| `GROQ_API_KEY` | No | Enables the AI chat assistant |
+| `GROQ_API_KEY` | No | Enables the AI text assistant |
+| `GEMINI_API_KEY` | No | Enables PDF reading in the assistant (Google Gemini) |
+| `GEMINI_MODEL` | No | Gemini model to use — default `gemini-2.5-flash`. Pick one with free-tier quota on your key |
 | `CLOUDINARY_URL` | No | `cloudinary://api_key:api_secret@cloud_name` — enables uploads |
 
 *Required for Google sign-in. Email/password auth works without it.

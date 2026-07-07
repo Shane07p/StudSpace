@@ -24,6 +24,7 @@ src/
 ├── semesters.jsx   Semester / course / resource management + weekly timetable
 ├── attendance.jsx  Attendance tracker
 ├── calculator.jsx  CGPA calculator (shown as "Grades" in the sidebar)
+├── assistant.jsx   AI assistant page — conversation list + persistent chat (Markdown/LaTeX)
 ├── profile.jsx     User profile
 ├── tweaks-panel.jsx  UI customization panel
 └── globals.css     Tailwind base + CSS custom properties

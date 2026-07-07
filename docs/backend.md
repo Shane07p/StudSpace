@@ -16,7 +16,7 @@ com/studspace/
 ├── attendance/   Attendance upsert + summary
 ├── slot/         Timetable slots (with overlap guard)
 ├── upload/       Cloudinary PDF / image upload
-├── ai/           Groq chat assistant
+├── ai/           AI assistant — Groq text chat + Gemini PDF reading, persistent conversations
 ├── dashboard/    Aggregated stats endpoint
 ├── share/        Public (no-auth) shared-semester view
 ├── common/       ApiResponse, exceptions, GlobalExceptionHandler
@@ -91,7 +91,9 @@ Exceptions thrown from services are translated to clean JSON by `GlobalException
 - **UploadService** — validates magic bytes (`%PDF-`, JPEG/PNG/WebP/GIF), not just the Content-Type header; stores PDFs with a forced `.pdf` name; uploads to Cloudinary.
 - **TimetableSlotService** — rejects slots that overlap an existing one on the same day, and verifies a slot's course belongs to its semester.
 - **ShareService** — the only endpoint that returns data without auth; builds a curated public DTO (no email, no password hash, no ids) from a semester's share token.
-- **AiService** — forwards the user's message + their own semester context to Groq (LLaMA 3.3 70B).
+- **AiService** — builds the semester-context system prompt and forwards text chats to Groq (LLaMA 3.3 70B).
+- **ConversationService** — persists conversations and messages (multi-turn history), and routes each turn: if the attached resource is a PDF and Gemini is configured, it sends the PDF to **GeminiClient** (multimodal); otherwise it falls back to Groq with the system prompt. Every conversation is ownership-checked.
+- **GeminiClient** — fetches the resource's PDF bytes and calls Google Gemini's `generateContent` with the file inline. Disabled (falls back to Groq) when `GEMINI_API_KEY` is unset; the model is set by `GEMINI_MODEL`.
 
 ## Config
 

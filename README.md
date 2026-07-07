@@ -25,7 +25,7 @@ A full-stack academic workspace for university students — organize semesters, 
 - **Profile** — Editable profile with social and coding handle links (GitHub, LinkedIn, LeetCode, etc.)
 - **Share page** — Unauthenticated public view of a shared semester (courses, resources, stats)
 - **Google OAuth** — Sign in with Google in addition to email/password
-- **AI Chat** — Semester-aware study assistant powered by Groq LLaMA 3.3 70B
+- **AI Assistant** — Semester-aware study assistant with persistent, multi-turn chat history. Reads your attached PDF resources via Google Gemini (multimodal); falls back to Groq LLaMA 3.3 70B for text. Replies render Markdown + LaTeX
 - **PDF Upload** — Upload study materials to Cloudinary (PDF only, 25 MB limit)
 - **Dark mode** — Persisted in `localStorage`
 - **Rate limiting** — 5 login attempts / 15 min / IP (Bucket4j)
@@ -43,7 +43,7 @@ A full-stack academic workspace for university students — organize semesters, 
 | Rate limiting | Bucket4j 8.10.1 |
 | File storage | Cloudinary (PDF / image upload) |
 | Frontend | Vite 5 · React 18 · Tailwind CSS 3.4 · Lucide React · FullCalendar 6 |
-| AI | Groq LLaMA 3.3 70B (chat assistant) |
+| AI | Groq LLaMA 3.3 70B (text chat) · Google Gemini (PDF reading) |
 | Container | Docker Compose (3 services: `db` · `backend` · `frontend`) |
 | Web server | nginx (static files + reverse proxy to Spring Boot) |
 

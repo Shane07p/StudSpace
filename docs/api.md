@@ -1,6 +1,6 @@
 # API Reference
 
-38 endpoints across 11 controllers. All paths are relative to `/api`. Protected endpoints require `Authorization: Bearer <jwt>`. All responses use the envelope `{ success, data, message }`.
+44 endpoints across 11 controllers. All paths are relative to `/api`. Protected endpoints require `Authorization: Bearer <jwt>`. All responses use the envelope `{ success, data, message }`.
 
 ## Auth
 | Method | Path | Auth | Description |
@@ -73,4 +73,12 @@
 ## AI
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `POST` | `/ai/chat` | Yes | Chat — body: `{ message, context? }`. Powered by Groq LLaMA 3.3 70B |
+| `POST` | `/ai/chat` | Yes | One-shot chat — body: `{ message, resourceId? }`. Legacy; the frontend uses the conversation endpoints below |
+| `GET` | `/ai/conversations` | Yes | List the caller's conversations (most-recently-updated first) |
+| `POST` | `/ai/conversations` | Yes | Create a conversation — body: `{ resourceId?, message? }`. Sends the first message if provided |
+| `GET` | `/ai/conversations/{id}` | Yes | Conversation detail with full message history |
+| `POST` | `/ai/conversations/{id}/messages` | Yes | Send a message — body: `{ content }`. Returns the updated conversation (assistant reply appended) |
+| `PUT` | `/ai/conversations/{id}/resource` | Yes | Attach/detach a resource — body: `{ resourceId }` (`null` detaches) |
+| `DELETE` | `/ai/conversations/{id}` | Yes | Delete a conversation and its messages |
+
+A conversation with a PDF resource attached is answered by Google Gemini (reads the PDF); otherwise Groq LLaMA 3.3 70B answers from a semester-context system prompt. Every endpoint is ownership-checked.
