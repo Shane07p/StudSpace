@@ -47,6 +47,7 @@ public class ConversationService {
     @Transactional
     public ConversationDetailDto create(UUID userId, CreateConversationRequest req) {
         User user = userService.findById(userId);
+        if (req.getResourceId() != null) resourceService.getOne(req.getResourceId(), userId); // verify ownership
         Conversation c = conversationRepository.save(Conversation.builder()
                 .user(user)
                 .resourceId(req.getResourceId())
