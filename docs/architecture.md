@@ -78,3 +78,17 @@ Measured on a local Docker stack against a seeded dataset (2 semesters, 4 course
 | Course attendance | GET `/api/courses/{id}/attendance` | 9 ms | 10 ms |
 
 Login is intentionally slow — BCrypt hashing is deliberately expensive to resist brute force. Every other endpoint responds under 60 ms.
+
+### Load & concurrency
+
+Load-tested with [k6](https://k6.io) — each virtual user (VU) logs in once, then loops the read endpoints. Local Docker stack:
+
+| Concurrent users (VUs) | Throughput | Errors | p95 |
+|---|---|---|---|
+| 20 | ~4,000 req/s | 0% | ~16 ms |
+| 40 | ~4,000 req/s | 0% | ~17 ms |
+| 80 | ~3,800 req/s | 0% | ~42 ms |
+
+Throughput plateaus around **4,000 req/s** (backend-bound) and stays error-free through 80 concurrent VUs — the stack degrades by slowing, not failing.
+
+This required an nginx change: the proxy `location` blocks now target a **keepalive `upstream`** (`proxy_http_version 1.1` + `Connection ""` in `Frontend/nginx.conf`). Without connection reuse, nginx opened a fresh TCP connection to the backend per request and returned **502s past ~10 concurrent users**; with it, the same hardware serves ~2× the throughput with zero errors.
