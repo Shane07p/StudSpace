@@ -1,5 +1,6 @@
 package com.studspace.dashboard;
 
+import com.studspace.attendance.AttendanceRecord;
 import com.studspace.attendance.AttendanceRepository;
 import com.studspace.attendance.AttendanceStatus;
 import com.studspace.course.Course;
@@ -19,7 +20,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,23 +42,28 @@ public class DashboardService {
                 .orElse(semesters.isEmpty() ? null : semesters.get(0));
 
         List<Course> allCourses = courseRepository.findBySemesterUserIdOrderByCreatedAtAsc(userId);
-        int totalCourses = allCourses.size();
-        int totalResources = allCourses.stream()
-                .mapToInt(c -> resourceRepository.countByCourseId(c.getId()))
-                .sum();
+        List<UUID> courseIds = allCourses.stream().map(Course::getId).toList();
 
-        double overallAttendance = 0;
-        if (!allCourses.isEmpty()) {
-            long totalPresent = 0, totalNonCancelled = 0;
-            for (Course c : allCourses) {
-                var records = attendanceRepository.findByCourseIdOrderByDateAsc(c.getId());
-                long present = records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
-                long cancelled = records.stream().filter(r -> r.getStatus() == AttendanceStatus.CANCELLED).count();
-                totalPresent += present;
-                totalNonCancelled += records.size() - cancelled;
-            }
-            overallAttendance = totalNonCancelled == 0 ? 0 : (totalPresent * 100.0) / totalNonCancelled;
+        // Batch-load attendance + resource counts once, then reuse the maps everywhere below.
+        Map<UUID, List<AttendanceRecord>> recordsMap = courseIds.isEmpty() ? Map.of()
+                : attendanceRepository.findByCourseIdIn(courseIds).stream()
+                    .collect(Collectors.groupingBy(r -> r.getCourse().getId()));
+        Map<UUID, Integer> countMap = courseIds.isEmpty() ? Map.of()
+                : resourceRepository.countByCourseIds(courseIds).stream()
+                    .collect(Collectors.toMap(row -> (UUID) row[0], row -> ((Long) row[1]).intValue()));
+
+        int totalCourses = allCourses.size();
+        int totalResources = countMap.values().stream().mapToInt(Integer::intValue).sum();
+
+        long totalPresent = 0, totalNonCancelled = 0;
+        for (Course c : allCourses) {
+            var records = recordsMap.getOrDefault(c.getId(), List.of());
+            long present = records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
+            long cancelled = records.stream().filter(r -> r.getStatus() == AttendanceStatus.CANCELLED).count();
+            totalPresent += present;
+            totalNonCancelled += records.size() - cancelled;
         }
+        double overallAttendance = totalNonCancelled == 0 ? 0 : (totalPresent * 100.0) / totalNonCancelled;
 
         int totalCredits = allCourses.stream().mapToInt(Course::getCredits).sum();
 
@@ -65,8 +73,13 @@ public class DashboardService {
         if (current != null) {
             SemesterDto semDto = mapper.map(current, SemesterDto.class);
             semDto.setShared(current.getShareToken() != null);
-            List<CourseDto> courses = courseRepository.findBySemesterIdOrderByCreatedAtAsc(current.getId())
-                    .stream().map(courseService::toDto).toList();
+            UUID curId = current.getId();
+            List<CourseDto> courses = allCourses.stream()
+                    .filter(c -> c.getSemester().getId().equals(curId))
+                    .map(c -> courseService.toDto(c,
+                            recordsMap.getOrDefault(c.getId(), List.of()),
+                            countMap.getOrDefault(c.getId(), 0)))
+                    .toList();
             currentView = new CurrentSemesterView(semDto, courses);
         }
 

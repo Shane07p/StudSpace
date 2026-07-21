@@ -19,6 +19,6 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
     List<Resource> findBySemesterIdAndCourseIsNullOrderByCreatedAtDesc(UUID semesterId);
 
-    @Query("SELECT r FROM Resource r WHERE r.course.semester.user.id = :userId ORDER BY r.createdAt DESC")
+    @Query("SELECT r FROM Resource r JOIN FETCH r.course WHERE r.course.semester.user.id = :userId ORDER BY r.createdAt DESC")
     List<Resource> findRecentByUserId(UUID userId, org.springframework.data.domain.Pageable pageable);
 }
