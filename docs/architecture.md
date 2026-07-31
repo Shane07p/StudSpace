@@ -43,15 +43,15 @@ Browser → /oauth2/authorization/google → Google consent
 
 The JWT is returned in the URL **fragment** (`#token=`), never a query parameter, so it never reaches server access logs or the `Referer` header. `Frontend/src/main.jsx` reads it from `location.hash` and strips it from the URL.
 
-## Production topology (DigitalOcean)
+## Production topology (single VM — currently Azure)
 
 ```
 HTTPS :443  (host nginx + Certbot / Let's Encrypt)
-   → Docker frontend nginx :80
+   → Docker frontend nginx  (127.0.0.1:8080)
    → Spring Boot :8080
 ```
 
-A host-level nginx terminates TLS and forwards to the Docker frontend. It passes `X-Forwarded-Proto: https` so the backend builds correct OAuth redirect URIs. See [deployment.md](deployment.md).
+Runs on one Ubuntu VM (currently Microsoft Azure, previously DigitalOcean). A host-level nginx terminates TLS and forwards to the Docker frontend container bound on `127.0.0.1:8080`. It passes `X-Forwarded-Proto: https` so the backend builds correct OAuth redirect URIs. See [deployment.md](deployment.md).
 
 ## Key design decisions
 

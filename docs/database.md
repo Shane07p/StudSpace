@@ -71,7 +71,7 @@ idx_messages_conversation_id messages(conversation_id)
 
 ## Accessing the DB
 
-Local or on the droplet, through the container (no exposed port):
+Local or on the server, through the container (no exposed port):
 
 ```bash
 docker compose exec db psql -U postgres -d studspace -c "SELECT username, email FROM users;"
