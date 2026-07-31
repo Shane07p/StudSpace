@@ -54,20 +54,63 @@ docker compose build backend frontend && docker compose up -d --force-recreate b
    - Production: `https://yourdomain.com/login/oauth2/code/google`
 4. Copy the Client ID + Secret into `.env`
 
-## Production (DigitalOcean)
+## Production (single VM)
 
-`docker-compose.prod.yml` adjusts CORS origins, removes the exposed DB port, and trusts forwarded headers from the host nginx.
+The production setup is the same on any Ubuntu VM — **currently Microsoft Azure**, previously DigitalOcean. Both run the same three containers behind a host-level nginx that terminates HTTPS.
+
+`docker-compose.prod.yml` closes the exposed DB port and binds the frontend to `127.0.0.1:8080` (only the host nginx reaches it); the backend trusts forwarded headers from that nginx.
+
+### Common steps (any VM)
 
 ```bash
-# on the server
-cd /root/StudSpace && git pull
-docker compose -f docker-compose.yml -f docker-compose.prod.yml build backend frontend
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate backend frontend
+# 1. install Docker
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER      # re-login after
+
+# 2. get the code + secrets
+git clone <repo-url> && cd StudSpace
+# copy .env with real secrets; set FRONTEND_URL=https://yourdomain.com
+
+# 3. build + run (build sequentially on small boxes)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build backend
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build frontend
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
-There is **no CI/CD** — pushing to GitHub does not redeploy. You pull and rebuild on the droplet manually.
+A **host-level nginx** terminates HTTPS (Certbot / Let's Encrypt) and proxies `https://yourdomain.com` → `http://127.0.0.1:8080` (the frontend container), passing `X-Forwarded-Proto: https` so the backend builds correct OAuth redirect URIs. Set `client_max_body_size 30M` in the host nginx for PDF uploads:
 
-A host-level nginx terminates HTTPS (Certbot / Let's Encrypt) and proxies `https://yourdomain.com` → `http://localhost:80` (the Docker frontend), passing `X-Forwarded-Proto: https` so the backend builds correct OAuth redirect URIs. Set `client_max_body_size 30M` in the host nginx to allow PDF uploads.
+```bash
+sudo apt install -y nginx certbot python3-certbot-nginx
+# create /etc/nginx/sites-available/studspace with a server block:
+#   listen 80; server_name yourdomain.com; client_max_body_size 30M;
+#   location / { proxy_pass http://127.0.0.1:8080; proxy_set_header Host $host;
+#                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#                proxy_set_header X-Forwarded-Proto $scheme; }
+sudo certbot --nginx -d yourdomain.com     # adds 443 + HTTP->HTTPS redirect
+```
+
+There is **no CI/CD** — pushing to GitHub does not redeploy. Pull and rebuild on the VM manually. On a fresh volume, `schema.sql` runs automatically on first boot, so all tables are created; only an existing DB needs manual migration.
+
+### Azure notes (current host)
+
+- **Azure for Students** restricts regions via a `listOfAllowedLocations` policy. Central India is **not** allowed — deploy to an allowed region (e.g. **UAE North**, East Asia, Malaysia West). Set **Availability options → "No infrastructure redundancy required"** to avoid zone-level policy blocks.
+- The cheapest viable size is **`B2ats_v2`** (2 vCPU / 1 GB, ~$8/mo). On 1 GB, two tweaks are required so the build and JVM don't OOM:
+  ```bash
+  # 2 GB swap (before building)
+  sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
+  sudo mkswap /swapfile && sudo swapon /swapfile
+  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+  ```
+  and cap the JVM heap by adding to the backend service in `docker-compose.yml`:
+  ```yaml
+  JAVA_TOOL_OPTIONS: "-Xmx384m"
+  ```
+- The base `docker-compose.yml` frontend publishes `80:80` for local dev; remove that line on the VM so only the prod override's `127.0.0.1:8080` binding applies (Compose concatenates `ports`, so leaving both would expose the container publicly and clash with the host nginx).
+
+### DigitalOcean notes (previous host)
+
+- Droplet: Ubuntu, 2 GB RAM — enough to run without swap or the JVM cap.
+- Same host-nginx + Certbot setup; frontend bound to `127.0.0.1:8080`.
 
 ## Local development (without Docker)
 
